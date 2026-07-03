@@ -1,0 +1,29 @@
+# Maven
+target/
+*.jar
+*.war
+
+# React
+react_project/node_modules/
+react_project/dist/
+react_project/.vite/
+
+# H2 database (dev)
+data/*.mv.db
+data/*.trace.db
+
+# IDE
+.vscode/
+.idea/
+*.iml
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+/tmp/

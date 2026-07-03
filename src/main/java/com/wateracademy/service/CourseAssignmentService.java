@@ -1,0 +1,88 @@
+package com.wateracademy.service;
+
+import com.wateracademy.dto.mapper.CourseAssignmentMapper;
+import com.wateracademy.dto.request.CourseAssignmentRequest;
+import com.wateracademy.dto.response.CourseAssignmentResponse;
+import com.wateracademy.entity.CourseAssignment;
+import com.wateracademy.exception.DuplicateResourceException;
+import com.wateracademy.exception.ResourceNotFoundException;
+import com.wateracademy.repository.CourseAssignmentRepository;
+import java.util.List;
+import java.util.UUID;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@Transactional
+public class CourseAssignmentService {
+
+    private final CourseAssignmentRepository repository;
+    private final CourseAssignmentMapper mapper;
+    private final WorkspaceService workspaceService;
+    private final TrainerService trainerService;
+    private final CourseService courseService;
+
+    public CourseAssignmentService(CourseAssignmentRepository repository,
+                                   CourseAssignmentMapper mapper,
+                                   WorkspaceService workspaceService,
+                                   TrainerService trainerService,
+                                   CourseService courseService) {
+        this.repository = repository;
+        this.mapper = mapper;
+        this.workspaceService = workspaceService;
+        this.trainerService = trainerService;
+        this.courseService = courseService;
+    }
+
+    @Transactional(readOnly = true)
+    public List<CourseAssignmentResponse> findAllByWorkspaceId(UUID workspaceId) {
+        return repository.findByWorkspaceId(workspaceId).stream()
+                .map(mapper::toResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public CourseAssignmentResponse findById(UUID id) {
+        return mapper.toResponse(findEntity(id));
+    }
+
+    public CourseAssignmentResponse create(UUID workspaceId, CourseAssignmentRequest request) {
+        var workspace = workspaceService.findEntity(workspaceId);
+        var trainer = trainerService.findEntity(request.trainerId());
+        var course = courseService.findEntity(request.courseId());
+
+        validateBelongsToWorkspace(workspaceId, trainer, course);
+
+        if (repository.findByCourseId(request.courseId()).stream()
+                .anyMatch(a -> a.getTrainer().getId().equals(request.trainerId()))) {
+            throw new DuplicateResourceException("Trainer already assigned to this course");
+        }
+
+        var entity = new CourseAssignment();
+        entity.setWorkspace(workspace);
+        entity.setTrainer(trainer);
+        entity.setCourse(course);
+        return mapper.toResponse(repository.save(entity));
+    }
+
+    public void delete(UUID id) {
+        var entity = findEntity(id);
+        repository.delete(entity);
+    }
+
+    CourseAssignment findEntity(UUID id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("CourseAssignment", id));
+    }
+
+    private void validateBelongsToWorkspace(UUID workspaceId,
+                                            com.wateracademy.entity.Trainer trainer,
+                                            com.wateracademy.entity.Course course) {
+        if (!trainer.getWorkspace().getId().equals(workspaceId)) {
+            throw new ResourceNotFoundException("Trainer", trainer.getId());
+        }
+        if (!course.getWorkspace().getId().equals(workspaceId)) {
+            throw new ResourceNotFoundException("Course", course.getId());
+        }
+    }
+}
