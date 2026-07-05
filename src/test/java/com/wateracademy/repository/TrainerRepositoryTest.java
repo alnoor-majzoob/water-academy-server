@@ -59,7 +59,7 @@ class TrainerRepositoryTest {
 
     @Test
     void shouldReturnEmptyForUnknownWorkspace() {
-        var results = repository.findByWorkspaceId(java.util.UUID.randomUUID());
+        var results = repository.findByWorkspaceId(999L);
         assertThat(results).isEmpty();
     }
 }

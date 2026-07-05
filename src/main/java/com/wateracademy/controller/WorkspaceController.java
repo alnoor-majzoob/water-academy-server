@@ -7,7 +7,6 @@ import com.wateracademy.service.WorkspaceService;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,7 +33,7 @@ public class WorkspaceController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<WorkspaceResponse> findById(@PathVariable UUID id) {
+    public ResponseEntity<WorkspaceResponse> findById(@PathVariable Long id) {
         return ResponseEntity.ok(service.findById(id));
     }
 
@@ -45,19 +44,19 @@ public class WorkspaceController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<WorkspaceResponse> update(@PathVariable UUID id,
+    public ResponseEntity<WorkspaceResponse> update(@PathVariable Long id,
                                                      @RequestBody @Valid WorkspaceRequest request) {
         return ResponseEntity.ok(service.update(id, request));
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<WorkspaceResponse> updateStatus(@PathVariable UUID id,
+    public ResponseEntity<WorkspaceResponse> updateStatus(@PathVariable Long id,
                                                            @RequestBody @Valid WorkspaceStatusRequest request) {
         return ResponseEntity.ok(service.updateStatus(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

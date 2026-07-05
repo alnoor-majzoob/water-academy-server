@@ -5,7 +5,7 @@ import com.wateracademy.dto.request.TrainerRequest;
 import com.wateracademy.dto.request.VenueRequest;
 import com.wateracademy.dto.request.WorkspaceRequest;
 import com.wateracademy.entity.enums.CourseType;
-import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -31,7 +31,7 @@ class ExportControllerTest {
     @Autowired
     private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
-    private UUID createWorkspace() throws Exception {
+    private Long createWorkspace() throws Exception {
         var json = mockMvc.perform(post("/api/workspaces")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new WorkspaceRequest("WS", null, 2026, null))))
@@ -68,7 +68,7 @@ class ExportControllerTest {
 
     @Test
     void exportExcel_unknownWorkspace_shouldReturn404() throws Exception {
-        mockMvc.perform(get("/api/workspaces/{wsId}/export", UUID.randomUUID()))
+        mockMvc.perform(get("/api/workspaces/{wsId}/export", 999L))
                 .andExpect(status().isNotFound());
     }
 

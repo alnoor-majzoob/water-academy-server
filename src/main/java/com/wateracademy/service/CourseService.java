@@ -7,7 +7,6 @@ import com.wateracademy.entity.Course;
 import com.wateracademy.exception.ResourceNotFoundException;
 import com.wateracademy.repository.CourseRepository;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,36 +26,36 @@ public class CourseService {
     }
 
     @Transactional(readOnly = true)
-    public List<CourseResponse> findAllByWorkspaceId(UUID workspaceId) {
+    public List<CourseResponse> findAllByWorkspaceId(Long workspaceId) {
         return repository.findByWorkspaceId(workspaceId).stream()
                 .map(mapper::toResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public CourseResponse findById(UUID id) {
+    public CourseResponse findById(Long id) {
         return mapper.toResponse(findEntity(id));
     }
 
-    public CourseResponse create(UUID workspaceId, CourseRequest request) {
+    public CourseResponse create(Long workspaceId, CourseRequest request) {
         var workspace = workspaceService.findEntity(workspaceId);
         var entity = mapper.toEntity(request);
         entity.setWorkspace(workspace);
         return mapper.toResponse(repository.save(entity));
     }
 
-    public CourseResponse update(UUID id, CourseRequest request) {
+    public CourseResponse update(Long id, CourseRequest request) {
         var entity = findEntity(id);
         mapper.updateEntity(entity, request);
         return mapper.toResponse(repository.save(entity));
     }
 
-    public void delete(UUID id) {
+    public void delete(Long id) {
         var entity = findEntity(id);
         repository.delete(entity);
     }
 
-    Course findEntity(UUID id) {
+    Course findEntity(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Course", id));
     }

@@ -11,7 +11,7 @@ import com.wateracademy.exception.ResourceNotFoundException;
 import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
 import java.util.Set;
-import java.util.UUID;
+
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.junit.jupiter.api.Test;
@@ -47,7 +47,7 @@ class ExportServiceTest {
     @Autowired
     private CourseAssignmentService courseAssignmentService;
 
-    private UUID createWorkspace(String name) {
+    private Long createWorkspace(String name) {
         return workspaceService.create(new WorkspaceRequest(name, null, 2026, null)).id();
     }
 
@@ -114,7 +114,7 @@ class ExportServiceTest {
 
     @Test
     void exportToExcel_unknownWorkspace_throwsException() {
-        assertThatThrownBy(() -> exportService.exportToExcel(UUID.randomUUID()))
+        assertThatThrownBy(() -> exportService.exportToExcel(999L))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 

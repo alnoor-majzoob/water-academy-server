@@ -10,7 +10,6 @@ import com.wateracademy.exception.InvalidStatusTransitionException;
 import com.wateracademy.exception.ResourceNotFoundException;
 import com.wateracademy.repository.WorkspaceRepository;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,7 +33,7 @@ public class WorkspaceService {
     }
 
     @Transactional(readOnly = true)
-    public WorkspaceResponse findById(UUID id) {
+    public WorkspaceResponse findById(Long id) {
         return mapper.toResponse(findEntity(id));
     }
 
@@ -43,13 +42,13 @@ public class WorkspaceService {
         return mapper.toResponse(repository.save(entity));
     }
 
-    public WorkspaceResponse update(UUID id, WorkspaceRequest request) {
+    public WorkspaceResponse update(Long id, WorkspaceRequest request) {
         var entity = findEntity(id);
         mapper.updateEntity(entity, request);
         return mapper.toResponse(repository.save(entity));
     }
 
-    public WorkspaceResponse updateStatus(UUID id, WorkspaceStatusRequest request) {
+    public WorkspaceResponse updateStatus(Long id, WorkspaceStatusRequest request) {
         var entity = findEntity(id);
         var newStatus = request.status();
         validateStatusTransition(entity.getStatus(), newStatus);
@@ -57,12 +56,12 @@ public class WorkspaceService {
         return mapper.toResponse(repository.save(entity));
     }
 
-    public void delete(UUID id) {
+    public void delete(Long id) {
         var entity = findEntity(id);
         repository.delete(entity);
     }
 
-    Workspace findEntity(UUID id) {
+    Workspace findEntity(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Workspace", id));
     }

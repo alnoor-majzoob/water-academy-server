@@ -3,7 +3,6 @@ package com.wateracademy.controller;
 import com.wateracademy.dto.response.ImportResult;
 import com.wateracademy.service.ImportService;
 import java.io.IOException;
-import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,7 +22,7 @@ public class ImportController {
     }
 
     @PostMapping
-    public ResponseEntity<ImportResult> importExcel(@PathVariable UUID workspaceId,
+    public ResponseEntity<ImportResult> importExcel(@PathVariable Long workspaceId,
                                                      @RequestParam("file") MultipartFile file) throws IOException {
         var result = importService.importExcel(file.getInputStream(), workspaceId);
         return ResponseEntity.ok(result);

@@ -4,7 +4,6 @@ import com.wateracademy.service.ExportService;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -27,7 +26,7 @@ public class ExportController {
 
     @GetMapping
     public ResponseEntity<byte[]> exportExcel(
-            @PathVariable UUID workspaceId,
+            @PathVariable Long workspaceId,
             @RequestParam(required = false, value = "sheets") List<String> sheets,
             @RequestParam(required = false, value = "type") String type) {
         Set<String> sheetSet = sheets != null ? new HashSet<>(sheets) : null;

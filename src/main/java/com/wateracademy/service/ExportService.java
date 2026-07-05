@@ -20,7 +20,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -60,11 +59,11 @@ public class ExportService {
         this.scheduleEntryRepository = scheduleEntryRepository;
     }
 
-    public byte[] exportToExcel(UUID workspaceId) {
+    public byte[] exportToExcel(Long workspaceId) {
         return exportToExcel(workspaceId, null, null);
     }
 
-    public byte[] exportToExcel(UUID workspaceId, Set<String> sheets, String type) {
+    public byte[] exportToExcel(Long workspaceId, Set<String> sheets, String type) {
         workspaceService.findEntity(workspaceId);
 
         List<Course> courses = Collections.emptyList();

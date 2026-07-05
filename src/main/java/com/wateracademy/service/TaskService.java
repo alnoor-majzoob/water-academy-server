@@ -9,7 +9,6 @@ import com.wateracademy.exception.TaskAlreadyRunningException;
 import com.wateracademy.repository.TaskRepository;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +28,7 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
-    public List<TaskResponse> findAllByWorkspaceId(UUID workspaceId) {
+    public List<TaskResponse> findAllByWorkspaceId(Long workspaceId) {
         return repository.findAll().stream()
                 .filter(t -> t.getWorkspace().getId().equals(workspaceId))
                 .map(mapper::toResponse)
@@ -37,11 +36,11 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
-    public TaskResponse findById(UUID id) {
+    public TaskResponse findById(Long id) {
         return mapper.toResponse(findEntity(id));
     }
 
-    public TaskResponse create(UUID workspaceId) {
+    public TaskResponse create(Long workspaceId) {
         var workspace = workspaceService.findEntity(workspaceId);
 
         if (repository.existsByWorkspaceIdAndStatus(workspaceId, TaskStatus.RUNNING)) {
@@ -55,14 +54,14 @@ public class TaskService {
         return mapper.toResponse(repository.save(task));
     }
 
-    public TaskResponse start(UUID id) {
+    public TaskResponse start(Long id) {
         var task = findEntity(id);
         task.setStatus(TaskStatus.RUNNING);
         task.setStartedAt(LocalDateTime.now());
         return mapper.toResponse(repository.save(task));
     }
 
-    public TaskResponse complete(UUID id, String log) {
+    public TaskResponse complete(Long id, String log) {
         var task = findEntity(id);
         task.setStatus(TaskStatus.COMPLETED);
         task.setCompletedAt(LocalDateTime.now());
@@ -70,7 +69,7 @@ public class TaskService {
         return mapper.toResponse(repository.save(task));
     }
 
-    public TaskResponse fail(UUID id, String errorLog) {
+    public TaskResponse fail(Long id, String errorLog) {
         var task = findEntity(id);
         task.setStatus(TaskStatus.FAILED);
         task.setCompletedAt(LocalDateTime.now());
@@ -78,12 +77,12 @@ public class TaskService {
         return mapper.toResponse(repository.save(task));
     }
 
-    public void delete(UUID id) {
+    public void delete(Long id) {
         var entity = findEntity(id);
         repository.delete(entity);
     }
 
-    Task findEntity(UUID id) {
+    Task findEntity(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task", id));
     }

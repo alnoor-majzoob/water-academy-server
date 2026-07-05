@@ -3,23 +3,22 @@ package com.wateracademy.repository;
 import com.wateracademy.entity.ScheduleEntry;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface ScheduleEntryRepository extends JpaRepository<ScheduleEntry, UUID> {
-    List<ScheduleEntry> findByWorkspaceId(UUID workspaceId);
+public interface ScheduleEntryRepository extends JpaRepository<ScheduleEntry, Long> {
+    List<ScheduleEntry> findByWorkspaceId(Long workspaceId);
 
     @Query("SELECT s FROM ScheduleEntry s WHERE s.workspace.id = :workspaceId AND s.venue.id = :venueId AND s.startDate <= :endDate AND s.endDate >= :startDate")
-    List<ScheduleEntry> findVenueConflicts(@Param("workspaceId") UUID workspaceId,
-                                            @Param("venueId") UUID venueId,
+    List<ScheduleEntry> findVenueConflicts(@Param("workspaceId") Long workspaceId,
+                                            @Param("venueId") Long venueId,
                                             @Param("startDate") LocalDate startDate,
                                             @Param("endDate") LocalDate endDate);
 
     @Query("SELECT s FROM ScheduleEntry s WHERE s.workspace.id = :workspaceId AND s.trainer.id = :trainerId AND s.startDate <= :endDate AND s.endDate >= :startDate")
-    List<ScheduleEntry> findTrainerConflicts(@Param("workspaceId") UUID workspaceId,
-                                              @Param("trainerId") UUID trainerId,
+    List<ScheduleEntry> findTrainerConflicts(@Param("workspaceId") Long workspaceId,
+                                              @Param("trainerId") Long trainerId,
                                               @Param("startDate") LocalDate startDate,
                                               @Param("endDate") LocalDate endDate);
 }

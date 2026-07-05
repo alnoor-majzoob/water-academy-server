@@ -6,7 +6,7 @@ import com.wateracademy.exception.DuplicateResourceException;
 import com.wateracademy.exception.ResourceNotFoundException;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,7 +25,7 @@ class CalendarDayServiceTest {
     @Autowired
     private WorkspaceService workspaceService;
 
-    private UUID createWorkspace(String name) {
+    private Long createWorkspace(String name) {
         return workspaceService.create(new WorkspaceRequest(name, null, 2026, null)).id();
     }
 
@@ -83,7 +83,7 @@ class CalendarDayServiceTest {
 
     @Test
     void findById_shouldThrowWhenNotFound() {
-        assertThatThrownBy(() -> calendarDayService.findById(UUID.randomUUID()))
+        assertThatThrownBy(() -> calendarDayService.findById(999L))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 

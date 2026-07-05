@@ -7,7 +7,7 @@ import com.wateracademy.dto.request.WorkspaceRequest;
 import com.wateracademy.entity.enums.CourseType;
 import com.wateracademy.exception.DuplicateResourceException;
 import com.wateracademy.exception.ResourceNotFoundException;
-import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,15 +32,15 @@ class CourseAssignmentServiceTest {
     @Autowired
     private CourseService courseService;
 
-    private UUID createWorkspace(String name) {
+    private Long createWorkspace(String name) {
         return workspaceService.create(new WorkspaceRequest(name, null, 2026, null)).id();
     }
 
-    private UUID createTrainer(UUID wsId, String name) {
+    private Long createTrainer(Long wsId, String name) {
         return trainerService.create(wsId, new TrainerRequest(name, null, null, null, null, null, null, null, null)).id();
     }
 
-    private UUID createCourse(UUID wsId, String name) {
+    private Long createCourse(Long wsId, String name) {
         return courseService.create(wsId, new CourseRequest(name, null, 1, null, null,
                 null, null, null, CourseType.IN_PERSON, null, null, null, null, null)).id();
     }
@@ -109,7 +109,7 @@ class CourseAssignmentServiceTest {
 
     @Test
     void findById_shouldThrowWhenNotFound() {
-        assertThatThrownBy(() -> assignmentService.findById(UUID.randomUUID()))
+        assertThatThrownBy(() -> assignmentService.findById(999L))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 }

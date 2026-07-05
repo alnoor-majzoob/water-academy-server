@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
+
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -197,7 +197,7 @@ class ImportServiceTest {
     @Test
     void importExcel_unknownWorkspace_throwsException() throws IOException {
         InputStream excel = createMinimalWorkbook();
-        UUID fakeId = UUID.randomUUID();
+        Long fakeId = 999L;
 
         assertThatThrownBy(() -> importService.importExcel(excel, fakeId))
             .isInstanceOf(ResourceNotFoundException.class);

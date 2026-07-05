@@ -5,7 +5,7 @@ import com.wateracademy.dto.request.CourseRequest;
 import com.wateracademy.dto.request.WorkspaceRequest;
 import com.wateracademy.entity.enums.CourseType;
 import java.time.LocalDate;
-import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -32,7 +32,7 @@ class CourseControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private UUID createWorkspace() throws Exception {
+    private Long createWorkspace() throws Exception {
         var json = mockMvc.perform(post("/api/workspaces")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new WorkspaceRequest("WS", null, 2026, null))))
@@ -84,7 +84,7 @@ class CourseControllerTest {
 
     @Test
     void findById_shouldReturn404() throws Exception {
-        mockMvc.perform(get("/api/workspaces/{wsId}/courses/{id}", UUID.randomUUID(), UUID.randomUUID()))
+        mockMvc.perform(get("/api/workspaces/{wsId}/courses/{id}", 999L, 999L))
                 .andExpect(status().isNotFound());
     }
 

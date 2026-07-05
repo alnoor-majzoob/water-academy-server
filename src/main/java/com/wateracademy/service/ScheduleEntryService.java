@@ -10,7 +10,6 @@ import com.wateracademy.exception.ResourceNotFoundException;
 import com.wateracademy.repository.ScheduleEntryRepository;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,18 +39,18 @@ public class ScheduleEntryService {
     }
 
     @Transactional(readOnly = true)
-    public List<ScheduleEntryResponse> findAllByWorkspaceId(UUID workspaceId) {
+    public List<ScheduleEntryResponse> findAllByWorkspaceId(Long workspaceId) {
         return repository.findByWorkspaceId(workspaceId).stream()
                 .map(mapper::toResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public ScheduleEntryResponse findById(UUID id) {
+    public ScheduleEntryResponse findById(Long id) {
         return mapper.toResponse(findEntity(id));
     }
 
-    public ScheduleEntryResponse create(UUID workspaceId, ScheduleEntryRequest request) {
+    public ScheduleEntryResponse create(Long workspaceId, ScheduleEntryRequest request) {
         var workspace = workspaceService.findEntity(workspaceId);
         var course = courseService.findEntity(request.courseId());
         var trainer = trainerService.findEntity(request.trainerId());
@@ -72,7 +71,7 @@ public class ScheduleEntryService {
         return mapper.toResponse(repository.save(entity));
     }
 
-    public ScheduleEntryResponse update(UUID id, ScheduleEntryRequest request) {
+    public ScheduleEntryResponse update(Long id, ScheduleEntryRequest request) {
         var entity = findEntity(id);
         mapper.updateEntity(entity, request);
 
@@ -87,20 +86,20 @@ public class ScheduleEntryService {
         return mapper.toResponse(repository.save(entity));
     }
 
-    public ScheduleEntryResponse updateStatus(UUID id, ScheduleStatus newStatus) {
+    public ScheduleEntryResponse updateStatus(Long id, ScheduleStatus newStatus) {
         var entity = findEntity(id);
         validateStatusTransition(entity.getStatus(), newStatus);
         entity.setStatus(newStatus);
         return mapper.toResponse(repository.save(entity));
     }
 
-    public void delete(UUID id) {
+    public void delete(Long id) {
         var entity = findEntity(id);
         repository.delete(entity);
     }
 
     @Transactional(readOnly = true)
-    public List<ScheduleEntryResponse> findVenueConflicts(UUID workspaceId, UUID venueId,
+    public List<ScheduleEntryResponse> findVenueConflicts(Long workspaceId, Long venueId,
                                                            LocalDate startDate, LocalDate endDate) {
         return repository.findVenueConflicts(workspaceId, venueId, startDate, endDate)
                 .stream()
@@ -109,7 +108,7 @@ public class ScheduleEntryService {
     }
 
     @Transactional(readOnly = true)
-    public List<ScheduleEntryResponse> findTrainerConflicts(UUID workspaceId, UUID trainerId,
+    public List<ScheduleEntryResponse> findTrainerConflicts(Long workspaceId, Long trainerId,
                                                              LocalDate startDate, LocalDate endDate) {
         return repository.findTrainerConflicts(workspaceId, trainerId, startDate, endDate)
                 .stream()
@@ -117,7 +116,7 @@ public class ScheduleEntryService {
                 .toList();
     }
 
-    ScheduleEntry findEntity(UUID id) {
+    ScheduleEntry findEntity(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("ScheduleEntry", id));
     }

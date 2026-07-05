@@ -1,11 +1,10 @@
 package com.wateracademy.dto.response;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 public record TrainerResponse(
-    UUID id,
-    UUID workspaceId,
+    Long id,
+    Long workspaceId,
     String externalId,
     String name,
     String specialties,

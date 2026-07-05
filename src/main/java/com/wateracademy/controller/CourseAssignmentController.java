@@ -6,7 +6,6 @@ import com.wateracademy.service.CourseAssignmentService;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,24 +26,24 @@ public class CourseAssignmentController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CourseAssignmentResponse>> findAll(@PathVariable UUID workspaceId) {
+    public ResponseEntity<List<CourseAssignmentResponse>> findAll(@PathVariable Long workspaceId) {
         return ResponseEntity.ok(service.findAllByWorkspaceId(workspaceId));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CourseAssignmentResponse> findById(@PathVariable UUID id) {
+    public ResponseEntity<CourseAssignmentResponse> findById(@PathVariable Long id) {
         return ResponseEntity.ok(service.findById(id));
     }
 
     @PostMapping
-    public ResponseEntity<CourseAssignmentResponse> create(@PathVariable UUID workspaceId,
+    public ResponseEntity<CourseAssignmentResponse> create(@PathVariable Long workspaceId,
                                                             @RequestBody @Valid CourseAssignmentRequest request) {
         var response = service.create(workspaceId, request);
         return ResponseEntity.created(URI.create("/api/workspaces/" + workspaceId + "/assignments/" + response.id())).body(response);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

@@ -4,7 +4,7 @@ import com.wateracademy.dto.request.WorkspaceRequest;
 import com.wateracademy.entity.enums.TaskStatus;
 import com.wateracademy.exception.ResourceNotFoundException;
 import com.wateracademy.exception.TaskAlreadyRunningException;
-import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,7 +23,7 @@ class TaskServiceTest {
     @Autowired
     private WorkspaceService workspaceService;
 
-    private UUID createWorkspace(String name) {
+    private Long createWorkspace(String name) {
         return workspaceService.create(new WorkspaceRequest(name, null, 2026, null)).id();
     }
 
@@ -93,7 +93,7 @@ class TaskServiceTest {
 
     @Test
     void findById_shouldThrowWhenNotFound() {
-        assertThatThrownBy(() -> taskService.findById(UUID.randomUUID()))
+        assertThatThrownBy(() -> taskService.findById(999L))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 }

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wateracademy.dto.request.WorkspaceRequest;
 import com.wateracademy.dto.request.WorkspaceStatusRequest;
 import com.wateracademy.entity.enums.WorkspaceStatus;
-import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -67,7 +67,7 @@ class WorkspaceControllerTest {
 
     @Test
     void findById_shouldReturn404() throws Exception {
-        mockMvc.perform(get("/api/workspaces/{id}", UUID.randomUUID()))
+        mockMvc.perform(get("/api/workspaces/{id}", 999L))
                 .andExpect(status().isNotFound());
     }
 

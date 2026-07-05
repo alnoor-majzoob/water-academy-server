@@ -8,7 +8,6 @@ import jakarta.validation.Valid;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,44 +31,44 @@ public class ScheduleEntryController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ScheduleEntryResponse>> findAll(@PathVariable UUID workspaceId) {
+    public ResponseEntity<List<ScheduleEntryResponse>> findAll(@PathVariable Long workspaceId) {
         return ResponseEntity.ok(service.findAllByWorkspaceId(workspaceId));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ScheduleEntryResponse> findById(@PathVariable UUID id) {
+    public ResponseEntity<ScheduleEntryResponse> findById(@PathVariable Long id) {
         return ResponseEntity.ok(service.findById(id));
     }
 
     @PostMapping
-    public ResponseEntity<ScheduleEntryResponse> create(@PathVariable UUID workspaceId,
+    public ResponseEntity<ScheduleEntryResponse> create(@PathVariable Long workspaceId,
                                                          @RequestBody @Valid ScheduleEntryRequest request) {
         var response = service.create(workspaceId, request);
         return ResponseEntity.created(URI.create("/api/workspaces/" + workspaceId + "/schedule-entries/" + response.id())).body(response);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ScheduleEntryResponse> update(@PathVariable UUID id,
+    public ResponseEntity<ScheduleEntryResponse> update(@PathVariable Long id,
                                                          @RequestBody @Valid ScheduleEntryRequest request) {
         return ResponseEntity.ok(service.update(id, request));
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<ScheduleEntryResponse> updateStatus(@PathVariable UUID id,
+    public ResponseEntity<ScheduleEntryResponse> updateStatus(@PathVariable Long id,
                                                                @RequestBody @Valid ScheduleEntryStatusRequest request) {
         return ResponseEntity.ok(service.updateStatus(id, request.status()));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/conflicts/venue")
     public ResponseEntity<List<ScheduleEntryResponse>> findVenueConflicts(
-            @PathVariable UUID workspaceId,
-            @RequestParam UUID venueId,
+            @PathVariable Long workspaceId,
+            @RequestParam Long venueId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         return ResponseEntity.ok(service.findVenueConflicts(workspaceId, venueId, startDate, endDate));
@@ -77,8 +76,8 @@ public class ScheduleEntryController {
 
     @GetMapping("/conflicts/trainer")
     public ResponseEntity<List<ScheduleEntryResponse>> findTrainerConflicts(
-            @PathVariable UUID workspaceId,
-            @RequestParam UUID trainerId,
+            @PathVariable Long workspaceId,
+            @RequestParam Long trainerId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         return ResponseEntity.ok(service.findTrainerConflicts(workspaceId, trainerId, startDate, endDate));

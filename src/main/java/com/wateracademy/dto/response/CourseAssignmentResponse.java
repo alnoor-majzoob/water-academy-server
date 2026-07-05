@@ -1,12 +1,11 @@
 package com.wateracademy.dto.response;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 public record CourseAssignmentResponse(
-    UUID id,
-    UUID workspaceId,
-    UUID trainerId,
-    UUID courseId,
+    Long id,
+    Long workspaceId,
+    Long trainerId,
+    Long courseId,
     LocalDateTime createdAt
 ) {}

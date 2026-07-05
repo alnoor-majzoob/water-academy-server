@@ -2,11 +2,10 @@ package com.wateracademy.dto.response;
 
 import com.wateracademy.entity.enums.TaskStatus;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 public record TaskResponse(
-    UUID id,
-    UUID workspaceId,
+    Long id,
+    Long workspaceId,
     TaskStatus status,
     LocalDateTime startedAt,
     LocalDateTime completedAt,

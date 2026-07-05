@@ -5,7 +5,7 @@ import com.wateracademy.dto.request.WorkspaceRequest;
 import com.wateracademy.entity.enums.CourseType;
 import com.wateracademy.exception.ResourceNotFoundException;
 import java.time.LocalDate;
-import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,7 +24,7 @@ class VenueServiceTest {
     @Autowired
     private WorkspaceService workspaceService;
 
-    private UUID createWorkspace(String name) {
+    private Long createWorkspace(String name) {
         return workspaceService.create(new WorkspaceRequest(name, null, 2026, null)).id();
     }
 
@@ -51,7 +51,7 @@ class VenueServiceTest {
 
     @Test
     void findById_shouldThrowWhenNotFound() {
-        assertThatThrownBy(() -> venueService.findById(UUID.randomUUID()))
+        assertThatThrownBy(() -> venueService.findById(999L))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 

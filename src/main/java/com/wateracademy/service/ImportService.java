@@ -9,7 +9,6 @@ import com.wateracademy.entity.Venue;
 import com.wateracademy.entity.Workspace;
 import com.wateracademy.entity.enums.CourseType;
 import com.wateracademy.exception.ExcelParseException;
-import com.wateracademy.exception.ResourceNotFoundException;
 import com.wateracademy.repository.CalendarDayRepository;
 import com.wateracademy.repository.CourseAssignmentRepository;
 import com.wateracademy.repository.CourseRepository;
@@ -21,7 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DateUtil;
@@ -57,7 +55,7 @@ public class ImportService {
     }
 
     @Transactional
-    public ImportResult importExcel(InputStream excelStream, UUID workspaceId) {
+    public ImportResult importExcel(InputStream excelStream, Long workspaceId) {
         Workspace workspace = workspaceService.findEntity(workspaceId);
 
         try (Workbook workbook = WorkbookFactory.create(excelStream)) {

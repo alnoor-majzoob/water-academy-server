@@ -10,7 +10,7 @@ import com.wateracademy.entity.enums.ScheduleStatus;
 import com.wateracademy.exception.InvalidStatusTransitionException;
 import com.wateracademy.exception.ResourceNotFoundException;
 import java.time.LocalDate;
-import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -38,20 +38,20 @@ class ScheduleEntryServiceTest {
     @Autowired
     private VenueService venueService;
 
-    private UUID createWorkspace(String name) {
+    private Long createWorkspace(String name) {
         return workspaceService.create(new WorkspaceRequest(name, null, 2026, null)).id();
     }
 
-    private UUID createCourse(UUID wsId, String name) {
+    private Long createCourse(Long wsId, String name) {
         return courseService.create(wsId, new CourseRequest(name, null, 1, null, null,
                 null, null, null, CourseType.IN_PERSON, null, null, null, null, null)).id();
     }
 
-    private UUID createTrainer(UUID wsId, String name) {
+    private Long createTrainer(Long wsId, String name) {
         return trainerService.create(wsId, new TrainerRequest(name, null, null, null, null, null, null, null, null)).id();
     }
 
-    private UUID createVenue(UUID wsId, String name) {
+    private Long createVenue(Long wsId, String name) {
         return venueService.create(wsId, new VenueRequest(name, null, 30, CourseType.IN_PERSON, null, null, null, null)).id();
     }
 
@@ -220,7 +220,7 @@ class ScheduleEntryServiceTest {
 
     @Test
     void findById_shouldThrowWhenNotFound() {
-        assertThatThrownBy(() -> entryService.findById(UUID.randomUUID()))
+        assertThatThrownBy(() -> entryService.findById(999L))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 }

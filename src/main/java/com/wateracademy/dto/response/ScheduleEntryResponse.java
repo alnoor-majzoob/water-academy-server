@@ -3,16 +3,15 @@ package com.wateracademy.dto.response;
 import com.wateracademy.entity.enums.ScheduleStatus;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 public record ScheduleEntryResponse(
-    UUID id,
-    UUID workspaceId,
-    UUID courseId,
+    Long id,
+    Long workspaceId,
+    Long courseId,
     String courseName,
-    UUID trainerId,
+    Long trainerId,
     String trainerName,
-    UUID venueId,
+    Long venueId,
     String venueName,
     LocalDate startDate,
     LocalDate endDate,

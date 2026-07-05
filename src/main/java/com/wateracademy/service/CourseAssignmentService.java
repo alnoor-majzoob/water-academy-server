@@ -8,7 +8,6 @@ import com.wateracademy.exception.DuplicateResourceException;
 import com.wateracademy.exception.ResourceNotFoundException;
 import com.wateracademy.repository.CourseAssignmentRepository;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,18 +34,18 @@ public class CourseAssignmentService {
     }
 
     @Transactional(readOnly = true)
-    public List<CourseAssignmentResponse> findAllByWorkspaceId(UUID workspaceId) {
+    public List<CourseAssignmentResponse> findAllByWorkspaceId(Long workspaceId) {
         return repository.findByWorkspaceId(workspaceId).stream()
                 .map(mapper::toResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public CourseAssignmentResponse findById(UUID id) {
+    public CourseAssignmentResponse findById(Long id) {
         return mapper.toResponse(findEntity(id));
     }
 
-    public CourseAssignmentResponse create(UUID workspaceId, CourseAssignmentRequest request) {
+    public CourseAssignmentResponse create(Long workspaceId, CourseAssignmentRequest request) {
         var workspace = workspaceService.findEntity(workspaceId);
         var trainer = trainerService.findEntity(request.trainerId());
         var course = courseService.findEntity(request.courseId());
@@ -65,17 +64,17 @@ public class CourseAssignmentService {
         return mapper.toResponse(repository.save(entity));
     }
 
-    public void delete(UUID id) {
+    public void delete(Long id) {
         var entity = findEntity(id);
         repository.delete(entity);
     }
 
-    CourseAssignment findEntity(UUID id) {
+    CourseAssignment findEntity(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("CourseAssignment", id));
     }
 
-    private void validateBelongsToWorkspace(UUID workspaceId,
+    private void validateBelongsToWorkspace(Long workspaceId,
                                             com.wateracademy.entity.Trainer trainer,
                                             com.wateracademy.entity.Course course) {
         if (!trainer.getWorkspace().getId().equals(workspaceId)) {

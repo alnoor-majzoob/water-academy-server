@@ -7,7 +7,7 @@ import com.wateracademy.entity.enums.WorkspaceStatus;
 import com.wateracademy.exception.InvalidStatusTransitionException;
 import com.wateracademy.exception.ResourceNotFoundException;
 import java.util.List;
-import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -45,7 +45,7 @@ class WorkspaceServiceTest {
 
     @Test
     void findById_shouldThrowWhenNotFound() {
-        assertThatThrownBy(() -> service.findById(UUID.randomUUID()))
+        assertThatThrownBy(() -> service.findById(999L))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 

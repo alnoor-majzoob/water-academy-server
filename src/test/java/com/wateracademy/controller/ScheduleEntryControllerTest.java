@@ -10,7 +10,7 @@ import com.wateracademy.dto.request.WorkspaceRequest;
 import com.wateracademy.entity.enums.CourseType;
 import com.wateracademy.entity.enums.ScheduleStatus;
 import java.time.LocalDate;
-import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -37,7 +37,7 @@ class ScheduleEntryControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private UUID createWorkspace() throws Exception {
+    private Long createWorkspace() throws Exception {
         var json = mockMvc.perform(post("/api/workspaces")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new WorkspaceRequest("WS", null, 2026, null))))
@@ -45,7 +45,7 @@ class ScheduleEntryControllerTest {
         return objectMapper.readValue(json, com.wateracademy.dto.response.WorkspaceResponse.class).id();
     }
 
-    private UUID createCourse(UUID wsId) throws Exception {
+    private Long createCourse(Long wsId) throws Exception {
         var json = mockMvc.perform(post("/api/workspaces/{wsId}/courses", wsId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
@@ -55,7 +55,7 @@ class ScheduleEntryControllerTest {
         return objectMapper.readValue(json, com.wateracademy.dto.response.CourseResponse.class).id();
     }
 
-    private UUID createTrainer(UUID wsId) throws Exception {
+    private Long createTrainer(Long wsId) throws Exception {
         var json = mockMvc.perform(post("/api/workspaces/{wsId}/trainers", wsId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
@@ -64,7 +64,7 @@ class ScheduleEntryControllerTest {
         return objectMapper.readValue(json, com.wateracademy.dto.response.TrainerResponse.class).id();
     }
 
-    private UUID createVenue(UUID wsId) throws Exception {
+    private Long createVenue(Long wsId) throws Exception {
         var json = mockMvc.perform(post("/api/workspaces/{wsId}/venues", wsId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(

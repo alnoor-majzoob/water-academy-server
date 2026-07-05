@@ -8,7 +8,6 @@ import com.wateracademy.exception.DuplicateResourceException;
 import com.wateracademy.exception.ResourceNotFoundException;
 import com.wateracademy.repository.CalendarDayRepository;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,18 +27,18 @@ public class CalendarDayService {
     }
 
     @Transactional(readOnly = true)
-    public List<CalendarDayResponse> findAllByWorkspaceId(UUID workspaceId) {
+    public List<CalendarDayResponse> findAllByWorkspaceId(Long workspaceId) {
         return repository.findByWorkspaceId(workspaceId).stream()
                 .map(mapper::toResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public CalendarDayResponse findById(UUID id) {
+    public CalendarDayResponse findById(Long id) {
         return mapper.toResponse(findEntity(id));
     }
 
-    public CalendarDayResponse create(UUID workspaceId, CalendarDayRequest request) {
+    public CalendarDayResponse create(Long workspaceId, CalendarDayRequest request) {
         var workspace = workspaceService.findEntity(workspaceId);
         if (repository.findByWorkspaceIdAndDate(workspaceId, request.date()).isPresent()) {
             throw new DuplicateResourceException(
@@ -50,7 +49,7 @@ public class CalendarDayService {
         return mapper.toResponse(repository.save(entity));
     }
 
-    public List<CalendarDayResponse> bulkCreate(UUID workspaceId, List<CalendarDayRequest> requests) {
+    public List<CalendarDayResponse> bulkCreate(Long workspaceId, List<CalendarDayRequest> requests) {
         var workspace = workspaceService.findEntity(workspaceId);
         var entities = requests.stream()
                 .map(req -> {
@@ -64,7 +63,7 @@ public class CalendarDayService {
                 .toList();
     }
 
-    public CalendarDayResponse update(UUID id, CalendarDayRequest request) {
+    public CalendarDayResponse update(Long id, CalendarDayRequest request) {
         var entity = findEntity(id);
         entity.setDate(request.date());
         entity.setIsWorkDay(request.isWorkDay() != null ? request.isWorkDay() : entity.getIsWorkDay());
@@ -72,12 +71,12 @@ public class CalendarDayService {
         return mapper.toResponse(repository.save(entity));
     }
 
-    public void delete(UUID id) {
+    public void delete(Long id) {
         var entity = findEntity(id);
         repository.delete(entity);
     }
 
-    CalendarDay findEntity(UUID id) {
+    CalendarDay findEntity(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("CalendarDay", id));
     }

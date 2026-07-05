@@ -2,7 +2,7 @@ package com.wateracademy.controller;
 
 import com.wateracademy.dto.request.WorkspaceRequest;
 import java.io.ByteArrayOutputStream;
-import java.util.UUID;
+
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.Test;
@@ -32,7 +32,7 @@ class ImportControllerTest {
     @Autowired
     private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
-    private UUID createWorkspace() throws Exception {
+    private Long createWorkspace() throws Exception {
         var json = mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
                         .post("/api/workspaces")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -68,7 +68,7 @@ class ImportControllerTest {
     @Test
     void importExcel_unknownWorkspace_shouldReturn404() throws Exception {
         var file = createValidExcelFile();
-        mockMvc.perform(multipart("/api/workspaces/{wsId}/import", UUID.randomUUID())
+        mockMvc.perform(multipart("/api/workspaces/{wsId}/import", 999L)
                         .file(file))
                 .andExpect(status().isNotFound());
     }

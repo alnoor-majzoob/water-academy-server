@@ -6,7 +6,6 @@ import com.wateracademy.service.CalendarDayService;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,37 +27,37 @@ public class CalendarDayController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CalendarDayResponse>> findAll(@PathVariable UUID workspaceId) {
+    public ResponseEntity<List<CalendarDayResponse>> findAll(@PathVariable Long workspaceId) {
         return ResponseEntity.ok(service.findAllByWorkspaceId(workspaceId));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CalendarDayResponse> findById(@PathVariable UUID id) {
+    public ResponseEntity<CalendarDayResponse> findById(@PathVariable Long id) {
         return ResponseEntity.ok(service.findById(id));
     }
 
     @PostMapping
-    public ResponseEntity<CalendarDayResponse> create(@PathVariable UUID workspaceId,
+    public ResponseEntity<CalendarDayResponse> create(@PathVariable Long workspaceId,
                                                        @RequestBody @Valid CalendarDayRequest request) {
         var response = service.create(workspaceId, request);
         return ResponseEntity.created(URI.create("/api/workspaces/" + workspaceId + "/calendar-days/" + response.id())).body(response);
     }
 
     @PostMapping("/bulk")
-    public ResponseEntity<List<CalendarDayResponse>> bulkCreate(@PathVariable UUID workspaceId,
+    public ResponseEntity<List<CalendarDayResponse>> bulkCreate(@PathVariable Long workspaceId,
                                                                  @RequestBody @Valid List<CalendarDayRequest> requests) {
         var responses = service.bulkCreate(workspaceId, requests);
         return ResponseEntity.ok(responses);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CalendarDayResponse> update(@PathVariable UUID id,
+    public ResponseEntity<CalendarDayResponse> update(@PathVariable Long id,
                                                        @RequestBody @Valid CalendarDayRequest request) {
         return ResponseEntity.ok(service.update(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
