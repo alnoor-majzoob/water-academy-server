@@ -19,7 +19,7 @@ import java.util.Random;
 public final class SchedulerService {
 
     public static final class Config {
-        public int populationSize = 60;
+        public int populationSize = 5;
         public int maxGenerations = 80;
         public double mutationRate = 0.05;
         public int offspringMultiplier = ScheduleEngineFactory.DEFAULT_OFFSPRING_MULTIPLIER;
