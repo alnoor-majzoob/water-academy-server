@@ -16,6 +16,10 @@ public interface ScheduleEntryRepository extends JpaRepository<ScheduleEntry, Lo
     @Query("DELETE FROM ScheduleEntry s WHERE s.workspace.id = :workspaceId AND s.status = 'SCHEDULED'")
     void deleteScheduledByWorkspaceId(@Param("workspaceId") Long workspaceId);
 
+    @Modifying
+    @Query("DELETE FROM ScheduleEntry s WHERE s.workspace.id = :workspaceId")
+    void deleteAllByWorkspaceId(@Param("workspaceId") Long workspaceId);
+
     @Query("SELECT s FROM ScheduleEntry s WHERE s.workspace.id = :workspaceId AND s.venue.id = :venueId AND s.startDate <= :endDate AND s.endDate >= :startDate")
     List<ScheduleEntry> findVenueConflicts(@Param("workspaceId") Long workspaceId,
                                             @Param("venueId") Long venueId,

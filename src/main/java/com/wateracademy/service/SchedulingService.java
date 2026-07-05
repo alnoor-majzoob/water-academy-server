@@ -105,7 +105,7 @@ public class SchedulingService {
             if (isUpdate) {
                 scheduleEntryRepository.deleteScheduledByWorkspaceId(workspaceId);
             } else {
-                scheduleEntryRepository.deleteScheduledByWorkspaceId(workspaceId);
+                scheduleEntryRepository.deleteAllByWorkspaceId(workspaceId);
             }
 
             // Save GA output
