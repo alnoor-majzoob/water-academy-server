@@ -11,7 +11,6 @@ import org.springframework.data.repository.query.Param;
 public interface ScheduleEntryRepository extends JpaRepository<ScheduleEntry, Long> {
     List<ScheduleEntry> findByWorkspaceId(Long workspaceId);
 
-    void deleteByWorkspaceId(Long workspaceId);
 
     @Modifying
     @Query("DELETE FROM ScheduleEntry s WHERE s.workspace.id = :workspaceId AND s.status = 'SCHEDULED'")
