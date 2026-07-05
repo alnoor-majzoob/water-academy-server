@@ -7,16 +7,19 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface ScheduleEntryRepository extends JpaRepository<ScheduleEntry, Long> {
     List<ScheduleEntry> findByWorkspaceId(Long workspaceId);
 
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM ScheduleEntry s WHERE s.workspace.id = :workspaceId AND s.status = 'SCHEDULED'")
     void deleteScheduledByWorkspaceId(@Param("workspaceId") Long workspaceId);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM ScheduleEntry s WHERE s.workspace.id = :workspaceId")
     void deleteAllByWorkspaceId(@Param("workspaceId") Long workspaceId);
 

@@ -18,7 +18,6 @@ import com.wateracademy.scheduler.model.Trainer;
 import com.wateracademy.scheduler.model.Venue;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
@@ -63,7 +62,6 @@ public class SchedulingService {
     }
 
     @Async("gaTaskExecutor")
-    @Transactional
     public void runGaAsync(Long workspaceId, Long taskId, String mode) {
         try {
             taskService.start(taskId);
