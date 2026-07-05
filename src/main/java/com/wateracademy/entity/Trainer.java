@@ -3,16 +3,22 @@ package com.wateracademy.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
-@Table(name = "trainer")
+@Table(name = "trainer", indexes = {
+    @Index(columnList = "workspace_id")
+})
 public class Trainer extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "workspace_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Workspace workspace;
 
     @Column(name = "external_id", length = 20)

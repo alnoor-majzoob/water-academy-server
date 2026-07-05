@@ -6,25 +6,36 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
-@Table(name = "schedule_entry")
+@Table(name = "schedule_entry", indexes = {
+    @Index(columnList = "workspace_id"),
+    @Index(columnList = "course_id"),
+    @Index(columnList = "trainer_id"),
+    @Index(columnList = "venue_id")
+})
 public class ScheduleEntry extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "workspace_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Workspace workspace;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Course course;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trainer_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Trainer trainer;
 
     @ManyToOne(fetch = FetchType.LAZY)

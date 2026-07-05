@@ -1,8 +1,6 @@
 package com.wateracademy.service;
 
 import com.wateracademy.dto.response.TaskResponse;
-import com.wateracademy.entity.ScheduleEntry;
-import com.wateracademy.entity.Workspace;
 import com.wateracademy.entity.enums.ScheduleStatus;
 import com.wateracademy.entity.enums.WorkspaceStatus;
 import com.wateracademy.repository.CalendarDayRepository;
@@ -57,8 +55,6 @@ public class SchedulingService {
     }
 
     public TaskResponse startScheduling(Long workspaceId, String mode) {
-        var workspace = workspaceRepository.findById(workspaceId)
-                .orElseThrow(() -> new com.wateracademy.exception.ResourceNotFoundException("Workspace", workspaceId));
         var taskResponse = taskService.create(workspaceId);
 
         runGaAsync(workspaceId, taskResponse.id(), mode);

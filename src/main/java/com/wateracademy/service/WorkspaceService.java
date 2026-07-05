@@ -57,8 +57,7 @@ public class WorkspaceService {
     }
 
     public void delete(Long id) {
-        var entity = findEntity(id);
-        repository.delete(entity);
+        repository.deleteById(id);
     }
 
     Workspace findEntity(Long id) {
