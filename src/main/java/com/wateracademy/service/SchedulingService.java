@@ -102,7 +102,11 @@ public class SchedulingService {
             ScheduleReport report = scheduler.run();
 
             // Delete old entries only after GA succeeds
-            scheduleEntryRepository.deleteScheduledByWorkspaceId(workspaceId);
+            if (isUpdate) {
+                scheduleEntryRepository.deleteScheduledByWorkspaceId(workspaceId);
+            } else {
+                scheduleEntryRepository.deleteScheduledByWorkspaceId(workspaceId);
+            }
 
             // Save GA output
             var newEntries = DomainMapper.toScheduleEntries(
