@@ -4,6 +4,7 @@ import com.wateracademy.entity.ScheduleEntry;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -11,6 +12,10 @@ public interface ScheduleEntryRepository extends JpaRepository<ScheduleEntry, Lo
     List<ScheduleEntry> findByWorkspaceId(Long workspaceId);
 
     void deleteByWorkspaceId(Long workspaceId);
+
+    @Modifying
+    @Query("DELETE FROM ScheduleEntry s WHERE s.workspace.id = :workspaceId AND s.status = 'SCHEDULED'")
+    void deleteScheduledByWorkspaceId(@Param("workspaceId") Long workspaceId);
 
     @Query("SELECT s FROM ScheduleEntry s WHERE s.workspace.id = :workspaceId AND s.venue.id = :venueId AND s.startDate <= :endDate AND s.endDate >= :startDate")
     List<ScheduleEntry> findVenueConflicts(@Param("workspaceId") Long workspaceId,

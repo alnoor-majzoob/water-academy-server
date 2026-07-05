@@ -3,6 +3,7 @@ package com.wateracademy.service;
 import com.wateracademy.dto.response.TaskResponse;
 import com.wateracademy.entity.ScheduleEntry;
 import com.wateracademy.entity.Workspace;
+import com.wateracademy.entity.enums.ScheduleStatus;
 import com.wateracademy.entity.enums.WorkspaceStatus;
 import com.wateracademy.repository.CalendarDayRepository;
 import com.wateracademy.repository.CourseAssignmentRepository;
@@ -22,6 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class SchedulingService {
@@ -58,10 +61,6 @@ public class SchedulingService {
                 .orElseThrow(() -> new com.wateracademy.exception.ResourceNotFoundException("Workspace", workspaceId));
         var taskResponse = taskService.create(workspaceId);
 
-        if (!"update".equalsIgnoreCase(mode)) {
-            scheduleEntryRepository.deleteByWorkspaceId(workspaceId);
-        }
-
         runGaAsync(workspaceId, taskResponse.id(), mode);
 
         return taskResponse;
@@ -73,6 +72,20 @@ public class SchedulingService {
         try {
             taskService.start(taskId);
 
+            var existingEntries = scheduleEntryRepository.findByWorkspaceId(workspaceId);
+
+            boolean isUpdate = "update".equalsIgnoreCase(mode);
+            Set<Long> lockedCourseIds;
+            if (isUpdate) {
+                lockedCourseIds = existingEntries.stream()
+                        .filter(e -> e.getStatus() == ScheduleStatus.CONFIRMED
+                                  || e.getStatus() == ScheduleStatus.COMPLETED)
+                        .map(e -> e.getCourse().getId())
+                        .collect(Collectors.toSet());
+            } else {
+                lockedCourseIds = Set.of();
+            }
+
             var workspace = workspaceRepository.findById(workspaceId)
                     .orElseThrow(() -> new com.wateracademy.exception.ResourceNotFoundException("Workspace", workspaceId));
 
@@ -81,7 +94,6 @@ public class SchedulingService {
             var venues = venueRepository.findByWorkspaceId(workspaceId);
             var calendarDays = calendarDayRepository.findByWorkspaceId(workspaceId);
             var assignments = courseAssignmentRepository.findByWorkspaceId(workspaceId);
-            var existingEntries = scheduleEntryRepository.findByWorkspaceId(workspaceId);
 
             List<Course> gaCourses = DomainMapper.toGaCourses(courses, assignments, existingEntries);
             List<Trainer> gaTrainers = DomainMapper.toGaTrainers(trainers);
@@ -93,8 +105,22 @@ public class SchedulingService {
                     gaCourses, gaTrainers, gaVenues, gaCalendar, config);
             ScheduleReport report = scheduler.run();
 
+            // Delete old entries only after GA succeeds
+            if (isUpdate) {
+                scheduleEntryRepository.deleteScheduledByWorkspaceId(workspaceId);
+            } else {
+                scheduleEntryRepository.deleteByWorkspaceId(workspaceId);
+            }
+
+            // Save GA output
             var newEntries = DomainMapper.toScheduleEntries(
                     report, workspace, courses, trainers, venues);
+
+            // In update mode, exclude locked courses to preserve their CONFIRMED/COMPLETED entries
+            if (isUpdate) {
+                newEntries.removeIf(e -> lockedCourseIds.contains(e.getCourse().getId()));
+            }
+
             scheduleEntryRepository.saveAll(newEntries);
 
             workspace.setStatus(WorkspaceStatus.OPTIMIZED);
