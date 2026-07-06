@@ -36,7 +36,7 @@ public final class ScheduleFitnessEvaluator
     private static final double BONUS_CITY_MATCH = 5.0;
     private static final double BONUS_PRIORITY = 1.0;
     private static final double BONUS_EARLY_BUCKET = 15.0;
-    private static final int BUCKET_SIZE = 30;
+    private static final int BUCKET_SIZE = 5;
 
     public ScheduleFitnessEvaluator(List<Course> courses,
                                     List<Trainer> trainers,
@@ -97,7 +97,7 @@ public final class ScheduleFitnessEvaluator
                 score -= PENALTY_HOLIDAY_START;
             }
 
-            Set<LocalDate> unavailable = new HashSet<>();
+           Set<LocalDate> unavailable = new HashSet<>();
             Trainer trainer = trainerById.get(g.getTrainerId());
             if (trainer != null) {
                 unavailable.addAll(trainer.getUnavailableDates());
