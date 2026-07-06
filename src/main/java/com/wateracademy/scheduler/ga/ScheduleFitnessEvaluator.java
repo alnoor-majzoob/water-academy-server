@@ -36,7 +36,7 @@ public final class ScheduleFitnessEvaluator
     private static final double BONUS_CITY_MATCH = 5.0;
     private static final double BONUS_PRIORITY = 1.0;
     private static final double BONUS_EARLY_BUCKET = 15.0;
-    private static final int BUCKET_SIZE = 5;
+    private static final int BUCKET_SIZE = 15;
 
     public ScheduleFitnessEvaluator(List<Course> courses,
                                     List<Trainer> trainers,
