@@ -20,7 +20,7 @@ public final class SchedulerService {
 
     public static final class Config {
         public int populationSize = 5;
-        public int maxGenerations = 80;
+        public int maxGenerations = 200;
         public double mutationRate = 0.05;
         public int offspringMultiplier = ScheduleEngineFactory.DEFAULT_OFFSPRING_MULTIPLIER;
         public double greedyRatio = 0.1;
