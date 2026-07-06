@@ -29,8 +29,7 @@ public class TaskService {
 
     @Transactional(readOnly = true)
     public List<TaskResponse> findAllByWorkspaceId(Long workspaceId) {
-        return repository.findAll().stream()
-                .filter(t -> t.getWorkspace().getId().equals(workspaceId))
+        return repository.findByWorkspaceId(workspaceId).stream()
                 .map(mapper::toResponse)
                 .toList();
     }
