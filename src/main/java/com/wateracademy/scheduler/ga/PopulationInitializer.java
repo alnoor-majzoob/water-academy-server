@@ -20,7 +20,7 @@ import java.util.Set;
 public final class PopulationInitializer {
 
     private final List<Course> prioritySortedCourses;
-    private final Map<Integer, Course> courseById;
+    // private final Map<Integer, Course> courseById;
     private final Map<Integer, Trainer> trainerById;
     private final Map<Integer, Venue> venueById;
     private final List<LocalDate> workingDays;
@@ -52,9 +52,6 @@ public final class PopulationInitializer {
         });
         this.prioritySortedCourses = Collections.unmodifiableList(sorted);
 
-        Map<Integer, Course> cmap = new HashMap<>();
-        for (Course c : courses) cmap.put(c.getId(), c);
-        this.courseById = Map.copyOf(cmap);
         Map<Integer, Trainer> tmap = new HashMap<>();
         for (Trainer t : trainers) tmap.put(t.getId(), t);
         this.trainerById = Map.copyOf(tmap);
@@ -145,6 +142,14 @@ public final class PopulationInitializer {
             if (v.getCapacity() < course.getExpectedTrainees()) continue;
             if (!v.getCity().equals(course.getPreferredCity())) continue;
             result.add(v);
+        }
+
+        if( result.isEmpty()) {
+            for (Venue v : venueById.values()) {
+                if (v.getType() == VenueType.ONLINE) continue;
+                if (v.getCapacity() < course.getExpectedTrainees()) continue;
+                result.add(v);
+            }
         }
         return result;
     }

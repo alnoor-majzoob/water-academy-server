@@ -3,7 +3,6 @@ package com.wateracademy.scheduler.ga;
 import org.uncommons.maths.random.Probability;
 import org.uncommons.watchmaker.framework.EvolutionEngine;
 import org.uncommons.watchmaker.framework.EvolutionStrategyEngine;
-import org.uncommons.watchmaker.framework.EvolutionaryOperator;
 import org.uncommons.watchmaker.framework.operators.EvolutionPipeline;
 
 import java.util.Arrays;

@@ -1,8 +1,6 @@
 package com.wateracademy.scheduler.ga;
 
-import com.wateracademy.scheduler.model.DeliveryType;
 
-import java.util.List;
 import java.util.Random;
 import java.util.Set;
 

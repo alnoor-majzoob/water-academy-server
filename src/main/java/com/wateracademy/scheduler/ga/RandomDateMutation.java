@@ -1,7 +1,6 @@
 package com.wateracademy.scheduler.ga;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
