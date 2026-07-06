@@ -35,7 +35,7 @@ public final class ScheduleFitnessEvaluator
     private static final double PENALTY_CAPACITY = 25.0;
     private static final double BONUS_CITY_MATCH = 5.0;
     private static final double BONUS_PRIORITY = 1.0;
-    private static final double BONUS_EARLY_BUCKET = 15.0;
+    private static final double BONUS_EARLY_BUCKET = 5.0;
     private static final int BUCKET_SIZE = 15;
 
     public ScheduleFitnessEvaluator(List<Course> courses,
