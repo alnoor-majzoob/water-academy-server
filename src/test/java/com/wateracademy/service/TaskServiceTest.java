@@ -30,7 +30,7 @@ class TaskServiceTest {
     @Test
     void create_shouldPersistPendingTask() {
         var wsId = createWorkspace("Create Task");
-        var response = taskService.create(wsId);
+        var response = taskService.create(wsId, null);
         assertThat(response.id()).isNotNull();
         assertThat(response.status()).isEqualTo(TaskStatus.PENDING);
     }
@@ -38,27 +38,27 @@ class TaskServiceTest {
     @Test
     void create_shouldRejectWhenRunningExists() {
         var wsId = createWorkspace("Dup Task");
-        var task = taskService.create(wsId);
+        var task = taskService.create(wsId, null);
         taskService.start(task.id());
-        assertThatThrownBy(() -> taskService.create(wsId))
+        assertThatThrownBy(() -> taskService.create(wsId, null))
                 .isInstanceOf(TaskAlreadyRunningException.class);
     }
 
     @Test
     void create_shouldAllowNewTaskAfterPreviousCompleted() {
         var wsId = createWorkspace("Sequential");
-        var t1 = taskService.create(wsId);
+        var t1 = taskService.create(wsId, null);
         taskService.start(t1.id());
         taskService.complete(t1.id(), "Done");
 
-        var t2 = taskService.create(wsId);
+        var t2 = taskService.create(wsId, null);
         assertThat(t2.id()).isNotNull();
     }
 
     @Test
     void start_shouldSetRunning() {
         var wsId = createWorkspace("Start");
-        var created = taskService.create(wsId);
+        var created = taskService.create(wsId, null);
         var started = taskService.start(created.id());
         assertThat(started.status()).isEqualTo(TaskStatus.RUNNING);
     }
@@ -66,7 +66,7 @@ class TaskServiceTest {
     @Test
     void complete_shouldSetCompletedAndLog() {
         var wsId = createWorkspace("Complete");
-        var task = taskService.create(wsId);
+        var task = taskService.create(wsId, null);
         taskService.start(task.id());
         var completed = taskService.complete(task.id(), "All done successfully");
         assertThat(completed.status()).isEqualTo(TaskStatus.COMPLETED);
@@ -76,7 +76,7 @@ class TaskServiceTest {
     @Test
     void fail_shouldSetFailedAndLog() {
         var wsId = createWorkspace("Fail");
-        var task = taskService.create(wsId);
+        var task = taskService.create(wsId, null);
         taskService.start(task.id());
         var failed = taskService.fail(task.id(), "Error: timeout");
         assertThat(failed.status()).isEqualTo(TaskStatus.FAILED);
@@ -86,8 +86,8 @@ class TaskServiceTest {
     @Test
     void findAllByWorkspaceId_shouldReturnTasks() {
         var wsId = createWorkspace("List Tasks");
-        taskService.create(wsId);
-        taskService.create(wsId);
+        taskService.create(wsId, null);
+        taskService.create(wsId, null);
         assertThat(taskService.findAllByWorkspaceId(wsId)).hasSize(2);
     }
 

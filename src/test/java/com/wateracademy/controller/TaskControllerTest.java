@@ -41,7 +41,8 @@ class TaskControllerTest {
         mockMvc.perform(post("/api/workspaces/{wsId}/tasks", wsId))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").isNotEmpty())
-                .andExpect(jsonPath("$.status").value("PENDING"));
+                .andExpect(jsonPath("$.status").value("PENDING"))
+                .andExpect(jsonPath("$.mode").isEmpty());
     }
 
     @Test

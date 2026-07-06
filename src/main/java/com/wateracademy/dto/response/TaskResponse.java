@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 public record TaskResponse(
     Long id,
     Long workspaceId,
+    String mode,
     TaskStatus status,
     LocalDateTime startedAt,
     LocalDateTime completedAt,

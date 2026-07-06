@@ -34,6 +34,7 @@ class TaskRepositoryTest {
         var task = new Task();
         task.setWorkspace(workspace);
         task.setStatus(TaskStatus.PENDING);
+        task.setMode("new");
         task.setLog("Starting...");
 
         var saved = repository.save(task);

@@ -54,7 +54,7 @@ public class SchedulingService {
     }
 
     public TaskResponse startScheduling(Long workspaceId, String mode) {
-        var taskResponse = taskService.create(workspaceId);
+        var taskResponse = taskService.create(workspaceId, mode);
 
         runGaAsync(workspaceId, taskResponse.id(), mode);
 

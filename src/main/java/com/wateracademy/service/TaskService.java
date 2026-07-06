@@ -40,7 +40,7 @@ public class TaskService {
         return mapper.toResponse(findEntity(id));
     }
 
-    public TaskResponse create(Long workspaceId) {
+    public TaskResponse create(Long workspaceId, String mode) {
         var workspace = workspaceService.findEntity(workspaceId);
 
         if (repository.existsByWorkspaceIdAndStatus(workspaceId, TaskStatus.RUNNING)) {
@@ -51,6 +51,7 @@ public class TaskService {
         var task = new Task();
         task.setWorkspace(workspace);
         task.setStatus(TaskStatus.PENDING);
+        task.setMode(mode);
         return mapper.toResponse(repository.save(task));
     }
 

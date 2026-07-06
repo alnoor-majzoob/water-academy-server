@@ -35,7 +35,7 @@ public class TaskController {
 
     @PostMapping
     public ResponseEntity<TaskResponse> create(@PathVariable Long workspaceId) {
-        var response = service.create(workspaceId);
+        var response = service.create(workspaceId, null);
         return ResponseEntity.created(URI.create("/api/workspaces/" + workspaceId + "/tasks/" + response.id())).body(response);
     }
 

@@ -38,6 +38,9 @@ public class Task extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String log;
 
+    @Column(length = 20)
+    private String mode;
+
     public Workspace getWorkspace() {
         return workspace;
     }
@@ -76,5 +79,13 @@ public class Task extends BaseEntity {
 
     public void setLog(String log) {
         this.log = log;
+    }
+
+    public String getMode() {
+        return mode;
+    }
+
+    public void setMode(String mode) {
+        this.mode = mode;
     }
 }

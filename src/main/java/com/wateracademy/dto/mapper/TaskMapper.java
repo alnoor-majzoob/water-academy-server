@@ -11,6 +11,7 @@ public class TaskMapper {
         return new TaskResponse(
             entity.getId(),
             entity.getWorkspace().getId(),
+            entity.getMode(),
             entity.getStatus(),
             entity.getStartedAt(),
             entity.getCompletedAt(),
