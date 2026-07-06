@@ -8,6 +8,7 @@ import com.wateracademy.scheduler.model.Venue;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -23,6 +24,8 @@ public final class ScheduleFitnessEvaluator
     private final Map<Integer, Venue> venueById;
     private final Calendar calendar;
     private final int totalCourses;
+    private final List<LocalDate> sortedWorkingDays;
+    private final Map<LocalDate, Integer> workingDayIndex;
 
     private static final double BASE_PER_SCHEDULED = 100.0;
     private static final double PENALTY_UNSCHEDULED = 50.0;
@@ -32,6 +35,8 @@ public final class ScheduleFitnessEvaluator
     private static final double PENALTY_CAPACITY = 25.0;
     private static final double BONUS_CITY_MATCH = 5.0;
     private static final double BONUS_PRIORITY = 1.0;
+    private static final double BONUS_EARLY_BUCKET = 15.0;
+    private static final int BUCKET_SIZE = 30;
 
     public ScheduleFitnessEvaluator(List<Course> courses,
                                     List<Trainer> trainers,
@@ -48,6 +53,12 @@ public final class ScheduleFitnessEvaluator
         this.venueById = Map.copyOf(vmap);
         this.calendar = calendar;
         this.totalCourses = courses.size();
+        this.sortedWorkingDays = calendar.getWorkingDays().stream().sorted().toList();
+        Map<LocalDate, Integer> idx = new HashMap<>();
+        for (int i = 0; i < sortedWorkingDays.size(); i++) {
+            idx.put(sortedWorkingDays.get(i), i);
+        }
+        this.workingDayIndex = Collections.unmodifiableMap(idx);
     }
 
     @Override
@@ -74,6 +85,13 @@ public final class ScheduleFitnessEvaluator
             int maxPriority = Math.max(1, totalCourses);
             int bonus = Math.max(0, maxPriority - course.getPriority() + 1);
             score += BONUS_PRIORITY * bonus;
+
+            Integer startIdx = workingDayIndex.get(g.getStartDate());
+            if (startIdx != null) {
+                int bucket = startIdx / BUCKET_SIZE;
+                int totalBuckets = (int) Math.ceil((double) sortedWorkingDays.size() / BUCKET_SIZE);
+                score += BONUS_EARLY_BUCKET * Math.max(0, totalBuckets - bucket);
+            }
 
             if (calendar.isHoliday(g.getStartDate())) {
                 score -= PENALTY_HOLIDAY_START;
@@ -135,15 +153,13 @@ public final class ScheduleFitnessEvaluator
     }
 
     private List<LocalDate> occupiedWorkingDays(LocalDate start, int durationDays, Set<LocalDate> unavailable) {
-        List<LocalDate> wd = new ArrayList<>(calendar.getWorkingDays());
-        wd.sort(LocalDate::compareTo);
-        int startIdx = wd.indexOf(start);
-        if (startIdx < 0) return List.of();
+        Integer startIdx = workingDayIndex.get(start);
+        if (startIdx == null) return List.of();
         List<LocalDate> result = new ArrayList<>();
         Set<LocalDate> blocked = Objects.requireNonNullElseGet(unavailable, Set::of);
-        for (int i = startIdx; i < wd.size() && result.size() < durationDays; i++) {
-            if (!blocked.contains(wd.get(i))) {
-                result.add(wd.get(i));
+        for (int i = startIdx; i < sortedWorkingDays.size() && result.size() < durationDays; i++) {
+            if (!blocked.contains(sortedWorkingDays.get(i))) {
+                result.add(sortedWorkingDays.get(i));
             }
         }
         return result;
