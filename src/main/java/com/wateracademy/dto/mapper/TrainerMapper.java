@@ -23,7 +23,8 @@ public class TrainerMapper {
             entity.getCostPerDay(),
             entity.getNotes(),
             entity.getCreatedAt(),
-            entity.getUpdatedAt()
+            entity.getUpdatedAt(),
+            entity.getVersion()
         );
     }
 

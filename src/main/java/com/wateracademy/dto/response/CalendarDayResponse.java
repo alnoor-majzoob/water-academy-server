@@ -9,5 +9,6 @@ public record CalendarDayResponse(
     LocalDate date,
     Boolean isWorkDay,
     Boolean isHoliday,
-    Instant createdAt
+    Instant createdAt,
+    Long version
 ) {}

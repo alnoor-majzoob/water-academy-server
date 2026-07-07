@@ -18,5 +18,6 @@ public record ScheduleEntryResponse(
     ScheduleStatus status,
     String conflictNotes,
     Instant createdAt,
-    Instant updatedAt
+    Instant updatedAt,
+    Long version
 ) {}

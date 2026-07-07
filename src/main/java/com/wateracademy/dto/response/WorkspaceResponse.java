@@ -11,5 +11,6 @@ public record WorkspaceResponse(
     WorkspaceStatus status,
     String color,
     Instant createdAt,
-    Instant updatedAt
+    Instant updatedAt,
+    Long version
 ) {}

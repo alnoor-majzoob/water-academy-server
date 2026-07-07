@@ -22,7 +22,8 @@ public class VenueMapper {
             entity.getUnavailableDates(),
             entity.getEquipmentNotes(),
             entity.getCreatedAt(),
-            entity.getUpdatedAt()
+            entity.getUpdatedAt(),
+            entity.getVersion()
         );
     }
 

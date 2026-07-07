@@ -15,7 +15,8 @@ public class CalendarDayMapper {
             entity.getDate(),
             entity.getIsWorkDay(),
             entity.getIsHoliday(),
-            entity.getCreatedAt()
+            entity.getCreatedAt(),
+            entity.getVersion()
         );
     }
 

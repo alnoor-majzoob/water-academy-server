@@ -23,7 +23,8 @@ public class ScheduleEntryMapper {
             entity.getStatus(),
             entity.getConflictNotes(),
             entity.getCreatedAt(),
-            entity.getUpdatedAt()
+            entity.getUpdatedAt(),
+            entity.getVersion()
         );
     }
 

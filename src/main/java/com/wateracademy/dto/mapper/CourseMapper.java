@@ -28,7 +28,8 @@ public class CourseMapper {
             entity.getNotes(),
             entity.getColor(),
             entity.getCreatedAt(),
-            entity.getUpdatedAt()
+            entity.getUpdatedAt(),
+            entity.getVersion()
         );
     }
 

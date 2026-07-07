@@ -17,7 +17,8 @@ public class TaskMapper {
             entity.getCompletedAt(),
             entity.getLog(),
             entity.getCreatedAt(),
-            entity.getUpdatedAt()
+            entity.getUpdatedAt(),
+            entity.getVersion()
         );
     }
 }

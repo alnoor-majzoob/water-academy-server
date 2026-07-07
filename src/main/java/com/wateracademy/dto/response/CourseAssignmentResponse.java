@@ -7,5 +7,6 @@ public record CourseAssignmentResponse(
     Long workspaceId,
     Long trainerId,
     Long courseId,
-    Instant createdAt
+    Instant createdAt,
+    Long version
 ) {}

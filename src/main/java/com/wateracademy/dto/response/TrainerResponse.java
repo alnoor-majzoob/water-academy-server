@@ -16,5 +16,6 @@ public record TrainerResponse(
     Integer costPerDay,
     String notes,
     Instant createdAt,
-    Instant updatedAt
+    Instant updatedAt,
+    Long version
 ) {}

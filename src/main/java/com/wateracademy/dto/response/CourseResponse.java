@@ -23,5 +23,6 @@ public record CourseResponse(
     String notes,
     String color,
     Instant createdAt,
-    Instant updatedAt
+    Instant updatedAt,
+    Long version
 ) {}

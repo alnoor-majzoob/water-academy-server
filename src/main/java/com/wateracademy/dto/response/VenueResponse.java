@@ -17,5 +17,6 @@ public record VenueResponse(
     String unavailableDates,
     String equipmentNotes,
     Instant createdAt,
-    Instant updatedAt
+    Instant updatedAt,
+    Long version
 ) {}

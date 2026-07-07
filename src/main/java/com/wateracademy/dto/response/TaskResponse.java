@@ -12,5 +12,6 @@ public record TaskResponse(
     Instant completedAt,
     String log,
     Instant createdAt,
-    Instant updatedAt
+    Instant updatedAt,
+    Long version
 ) {}

@@ -13,7 +13,8 @@ public class CourseAssignmentMapper {
             entity.getWorkspace().getId(),
             entity.getTrainer().getId(),
             entity.getCourse().getId(),
-            entity.getCreatedAt()
+            entity.getCreatedAt(),
+            entity.getVersion()
         );
     }
 }

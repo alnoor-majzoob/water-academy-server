@@ -17,7 +17,8 @@ public class WorkspaceMapper {
             entity.getStatus(),
             entity.getColor(),
             entity.getCreatedAt(),
-            entity.getUpdatedAt()
+            entity.getUpdatedAt(),
+            entity.getVersion()
         );
     }
 
