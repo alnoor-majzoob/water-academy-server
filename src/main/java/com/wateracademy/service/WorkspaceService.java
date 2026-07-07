@@ -10,6 +10,8 @@ import com.wateracademy.exception.InvalidStatusTransitionException;
 import com.wateracademy.exception.ResourceNotFoundException;
 import com.wateracademy.repository.WorkspaceRepository;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,21 +67,19 @@ public class WorkspaceService {
                 .orElseThrow(() -> new ResourceNotFoundException("Workspace", id));
     }
 
+    private static final Map<WorkspaceStatus, Set<WorkspaceStatus>> VALID_TRANSITIONS = Map.of(
+        WorkspaceStatus.DRAFT,     Set.of(WorkspaceStatus.IMPORTED, WorkspaceStatus.DISABLED),
+        WorkspaceStatus.IMPORTED,  Set.of(WorkspaceStatus.OPTIMIZED, WorkspaceStatus.DRAFT),
+        WorkspaceStatus.OPTIMIZED, Set.of(WorkspaceStatus.DISABLED, WorkspaceStatus.IMPORTED),
+        WorkspaceStatus.DISABLED,  Set.of()
+    );
+
     private void validateStatusTransition(WorkspaceStatus current, WorkspaceStatus next) {
-        if (current == WorkspaceStatus.DISABLED) {
-            throw new InvalidStatusTransitionException("Cannot transition from DISABLED");
-        }
-        if (current == WorkspaceStatus.OPTIMIZED && next != WorkspaceStatus.DISABLED) {
+        if (current == next) return;
+        var allowed = VALID_TRANSITIONS.getOrDefault(current, Set.of());
+        if (!allowed.contains(next)) {
             throw new InvalidStatusTransitionException(
-                    "Cannot transition from OPTIMIZED to " + next);
-        }
-        if (current == next) {
-            return;
-        }
-        if (current == WorkspaceStatus.IMPORTED && next != WorkspaceStatus.OPTIMIZED
-                && next != WorkspaceStatus.DRAFT) {
-            throw new InvalidStatusTransitionException(
-                    "Cannot transition from IMPORTED to " + next);
+                    "Cannot transition from " + current + " to " + next);
         }
     }
 }

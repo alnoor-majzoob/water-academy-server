@@ -84,6 +84,39 @@ class WorkspaceServiceTest {
     }
 
     @Test
+    void updateStatus_shouldRejectDraftToOptimized() {
+        var created = service.create(new WorkspaceRequest("WS", null, 2026, null));
+        assertThatThrownBy(() ->
+                service.updateStatus(created.id(), new WorkspaceStatusRequest(WorkspaceStatus.OPTIMIZED)))
+                .isInstanceOf(InvalidStatusTransitionException.class);
+    }
+
+    @Test
+    void updateStatus_shouldTransitionFromDraftToDisabled() {
+        var created = service.create(new WorkspaceRequest("WS", null, 2026, null));
+        var result = service.updateStatus(created.id(), new WorkspaceStatusRequest(WorkspaceStatus.DISABLED));
+        assertThat(result.status()).isEqualTo(WorkspaceStatus.DISABLED);
+    }
+
+    @Test
+    void updateStatus_shouldTransitionFromOptimizedToImported() {
+        var created = service.create(new WorkspaceRequest("WS", null, 2026, null));
+        service.updateStatus(created.id(), new WorkspaceStatusRequest(WorkspaceStatus.IMPORTED));
+        service.updateStatus(created.id(), new WorkspaceStatusRequest(WorkspaceStatus.OPTIMIZED));
+        var result = service.updateStatus(created.id(), new WorkspaceStatusRequest(WorkspaceStatus.IMPORTED));
+        assertThat(result.status()).isEqualTo(WorkspaceStatus.IMPORTED);
+    }
+
+    @Test
+    void updateStatus_shouldRejectDisabledToAnything() {
+        var created = service.create(new WorkspaceRequest("WS", null, 2026, null));
+        service.updateStatus(created.id(), new WorkspaceStatusRequest(WorkspaceStatus.DISABLED));
+        assertThatThrownBy(() ->
+                service.updateStatus(created.id(), new WorkspaceStatusRequest(WorkspaceStatus.DRAFT)))
+                .isInstanceOf(InvalidStatusTransitionException.class);
+    }
+
+    @Test
     void delete_shouldRemoveWorkspace() {
         var created = service.create(new WorkspaceRequest("To Delete", null, 2026, null));
         service.delete(created.id());
