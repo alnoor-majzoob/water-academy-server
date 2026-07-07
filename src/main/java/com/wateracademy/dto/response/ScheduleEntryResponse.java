@@ -1,8 +1,8 @@
 package com.wateracademy.dto.response;
 
 import com.wateracademy.entity.enums.ScheduleStatus;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 public record ScheduleEntryResponse(
     Long id,
@@ -17,6 +17,6 @@ public record ScheduleEntryResponse(
     LocalDate endDate,
     ScheduleStatus status,
     String conflictNotes,
-    LocalDateTime createdAt,
-    LocalDateTime updatedAt
+    Instant createdAt,
+    Instant updatedAt
 ) {}

@@ -1,6 +1,6 @@
 package com.wateracademy.dto.response;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record TrainerResponse(
     Long id,
@@ -15,6 +15,6 @@ public record TrainerResponse(
     Integer maxConsecutiveDays,
     Integer costPerDay,
     String notes,
-    LocalDateTime createdAt,
-    LocalDateTime updatedAt
+    Instant createdAt,
+    Instant updatedAt
 ) {}

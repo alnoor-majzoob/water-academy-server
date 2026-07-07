@@ -1,11 +1,11 @@
 package com.wateracademy.dto.response;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record CourseAssignmentResponse(
     Long id,
     Long workspaceId,
     Long trainerId,
     Long courseId,
-    LocalDateTime createdAt
+    Instant createdAt
 ) {}

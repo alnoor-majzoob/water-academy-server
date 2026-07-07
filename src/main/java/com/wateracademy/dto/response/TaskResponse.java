@@ -1,16 +1,16 @@
 package com.wateracademy.dto.response;
 
 import com.wateracademy.entity.enums.TaskStatus;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record TaskResponse(
     Long id,
     Long workspaceId,
     String mode,
     TaskStatus status,
-    LocalDateTime startedAt,
-    LocalDateTime completedAt,
+    Instant startedAt,
+    Instant completedAt,
     String log,
-    LocalDateTime createdAt,
-    LocalDateTime updatedAt
+    Instant createdAt,
+    Instant updatedAt
 ) {}

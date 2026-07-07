@@ -1,8 +1,8 @@
 package com.wateracademy.dto.response;
 
 import com.wateracademy.entity.enums.CourseType;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 public record CourseResponse(
     Long id,
@@ -22,6 +22,6 @@ public record CourseResponse(
     LocalDate fixedDate,
     String notes,
     String color,
-    LocalDateTime createdAt,
-    LocalDateTime updatedAt
+    Instant createdAt,
+    Instant updatedAt
 ) {}

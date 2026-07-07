@@ -1,8 +1,8 @@
 package com.wateracademy.dto.response;
 
 import com.wateracademy.entity.enums.CourseType;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 public record VenueResponse(
     Long id,
@@ -16,6 +16,6 @@ public record VenueResponse(
     LocalDate availableTo,
     String unavailableDates,
     String equipmentNotes,
-    LocalDateTime createdAt,
-    LocalDateTime updatedAt
+    Instant createdAt,
+    Instant updatedAt
 ) {}

@@ -7,7 +7,7 @@ import com.wateracademy.entity.enums.TaskStatus;
 import com.wateracademy.exception.ResourceNotFoundException;
 import com.wateracademy.exception.TaskAlreadyRunningException;
 import com.wateracademy.repository.TaskRepository;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,14 +57,14 @@ public class TaskService {
     public TaskResponse start(Long id) {
         var task = findEntity(id);
         task.setStatus(TaskStatus.RUNNING);
-        task.setStartedAt(LocalDateTime.now());
+        task.setStartedAt(Instant.now());
         return mapper.toResponse(repository.save(task));
     }
 
     public TaskResponse complete(Long id, String log) {
         var task = findEntity(id);
         task.setStatus(TaskStatus.COMPLETED);
-        task.setCompletedAt(LocalDateTime.now());
+        task.setCompletedAt(Instant.now());
         task.setLog(log);
         return mapper.toResponse(repository.save(task));
     }
@@ -72,7 +72,7 @@ public class TaskService {
     public TaskResponse fail(Long id, String errorLog) {
         var task = findEntity(id);
         task.setStatus(TaskStatus.FAILED);
-        task.setCompletedAt(LocalDateTime.now());
+        task.setCompletedAt(Instant.now());
         task.setLog(errorLog);
         return mapper.toResponse(repository.save(task));
     }

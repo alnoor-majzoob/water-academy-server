@@ -10,7 +10,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -30,10 +30,10 @@ public class Task extends BaseEntity {
     private TaskStatus status = TaskStatus.PENDING;
 
     @Column(name = "started_at")
-    private LocalDateTime startedAt;
+    private Instant startedAt;
 
     @Column(name = "completed_at")
-    private LocalDateTime completedAt;
+    private Instant completedAt;
 
     @Column(columnDefinition = "TEXT")
     private String log;
@@ -57,19 +57,19 @@ public class Task extends BaseEntity {
         this.status = status;
     }
 
-    public LocalDateTime getStartedAt() {
+    public Instant getStartedAt() {
         return startedAt;
     }
 
-    public void setStartedAt(LocalDateTime startedAt) {
+    public void setStartedAt(Instant startedAt) {
         this.startedAt = startedAt;
     }
 
-    public LocalDateTime getCompletedAt() {
+    public Instant getCompletedAt() {
         return completedAt;
     }
 
-    public void setCompletedAt(LocalDateTime completedAt) {
+    public void setCompletedAt(Instant completedAt) {
         this.completedAt = completedAt;
     }
 

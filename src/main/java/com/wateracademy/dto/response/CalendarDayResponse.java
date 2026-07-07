@@ -1,7 +1,7 @@
 package com.wateracademy.dto.response;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 public record CalendarDayResponse(
     Long id,
@@ -9,5 +9,5 @@ public record CalendarDayResponse(
     LocalDate date,
     Boolean isWorkDay,
     Boolean isHoliday,
-    LocalDateTime createdAt
+    Instant createdAt
 ) {}

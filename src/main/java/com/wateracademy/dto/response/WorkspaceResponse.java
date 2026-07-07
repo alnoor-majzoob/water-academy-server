@@ -1,7 +1,7 @@
 package com.wateracademy.dto.response;
 
 import com.wateracademy.entity.enums.WorkspaceStatus;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record WorkspaceResponse(
     Long id,
@@ -10,6 +10,6 @@ public record WorkspaceResponse(
     Integer year,
     WorkspaceStatus status,
     String color,
-    LocalDateTime createdAt,
-    LocalDateTime updatedAt
+    Instant createdAt,
+    Instant updatedAt
 ) {}
