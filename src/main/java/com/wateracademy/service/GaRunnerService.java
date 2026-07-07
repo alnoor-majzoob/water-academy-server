@@ -1,6 +1,5 @@
 package com.wateracademy.service;
 
-import com.wateracademy.entity.enums.ScheduleStatus;
 import com.wateracademy.entity.enums.WorkspaceStatus;
 import com.wateracademy.repository.CalendarDayRepository;
 import com.wateracademy.repository.CourseAssignmentRepository;
@@ -23,7 +22,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class GaRunnerService {
@@ -68,16 +66,9 @@ public class GaRunnerService {
             var existingEntries = scheduleEntryRepository.findByWorkspaceId(workspaceId);
 
             boolean isUpdate = "update".equalsIgnoreCase(mode);
-            Set<Long> lockedCourseIds;
-            if (isUpdate) {
-                lockedCourseIds = existingEntries.stream()
-                        .filter(e -> e.getStatus() == ScheduleStatus.CONFIRMED
-                                  || e.getStatus() == ScheduleStatus.COMPLETED)
-                        .map(e -> e.getCourse().getId())
-                        .collect(Collectors.toSet());
-            } else {
-                lockedCourseIds = Set.of();
-            }
+            Set<Long> lockedCourseIds = isUpdate
+                ? scheduleEntryRepository.findLockedCourseIdsByWorkspaceId(workspaceId)
+                : Set.of();
 
             var workspace = workspaceRepository.findById(workspaceId)
                     .orElseThrow(() -> new com.wateracademy.exception.ResourceNotFoundException("Workspace", workspaceId));
