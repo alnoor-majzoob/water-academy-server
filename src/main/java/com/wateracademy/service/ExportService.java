@@ -15,6 +15,7 @@ import com.wateracademy.repository.TrainerRepository;
 import com.wateracademy.repository.VenueRepository;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -27,12 +28,15 @@ import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional(readOnly = true)
 public class ExportService {
 
     private static final Logger log = LoggerFactory.getLogger(ExportService.class);
@@ -68,6 +72,12 @@ public class ExportService {
     }
 
     public byte[] exportToExcel(Long workspaceId, Set<String> sheets, String type) {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        exportToExcel(workspaceId, sheets, type, bos);
+        return bos.toByteArray();
+    }
+
+    public void exportToExcel(Long workspaceId, Set<String> sheets, String type, OutputStream out) {
         workspaceService.findEntity(workspaceId);
         log.info("Export requested: workspaceId={}, sheets={}, type={}", workspaceId, sheets, type);
 
@@ -120,7 +130,7 @@ public class ExportService {
             scheduleEntries = scheduleEntryRepository.findByWorkspaceId(workspaceId);
         }
 
-        try (Workbook workbook = new XSSFWorkbook()) {
+        try (SXSSFWorkbook workbook = new SXSSFWorkbook(100)) {
             CellStyle headerStyle = createHeaderStyle(workbook);
 
             if (type != null) {
@@ -153,9 +163,7 @@ public class ExportService {
                 writeScheduleEntriesSheet(workbook, scheduleEntries, headerStyle);
             }
 
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            workbook.write(bos);
-            return bos.toByteArray();
+            workbook.write(out);
         } catch (IOException e) {
             throw new RuntimeException("Failed to export Excel file", e);
         }
@@ -303,6 +311,9 @@ public class ExportService {
     }
 
     private void autoSizeColumns(Sheet sheet, int count) {
+        if (sheet instanceof SXSSFSheet sx) {
+            sx.trackAllColumnsForAutoSizing();
+        }
         for (int i = 0; i < count; i++) {
             sheet.autoSizeColumn(i);
         }
