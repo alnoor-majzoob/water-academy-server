@@ -80,7 +80,7 @@ class WorkspaceControllerTest {
                 .andReturn().getResponse().getContentAsString();
         var created = objectMapper.readValue(json, com.wateracademy.dto.response.WorkspaceResponse.class);
 
-        var update = new WorkspaceRequest("Updated", "New desc", 2027, "#FFF");
+        var update = new WorkspaceRequest("Updated", "New desc", 2027, "#FFFFFF");
         mockMvc.perform(put("/api/workspaces/{id}", created.id())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(update)))

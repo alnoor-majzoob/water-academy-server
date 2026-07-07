@@ -1,6 +1,7 @@
 package com.wateracademy.dto.request;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 
 public record ScheduleEntryRequest(
@@ -9,5 +10,5 @@ public record ScheduleEntryRequest(
     Long venueId,
     @NotNull LocalDate startDate,
     @NotNull LocalDate endDate,
-    String conflictNotes
+    @Size(max = 5000) String conflictNotes
 ) {}

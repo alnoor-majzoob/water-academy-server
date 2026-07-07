@@ -51,6 +51,7 @@ public class ScheduleEntryService {
     }
 
     public ScheduleEntryResponse create(Long workspaceId, ScheduleEntryRequest request) {
+        validateCrossField(request);
         var workspace = workspaceService.findEntity(workspaceId);
         var course = courseService.findEntity(request.courseId());
         var trainer = trainerService.findEntity(request.trainerId());
@@ -72,6 +73,7 @@ public class ScheduleEntryService {
     }
 
     public ScheduleEntryResponse update(Long id, ScheduleEntryRequest request) {
+        validateCrossField(request);
         var entity = findEntity(id);
         mapper.updateEntity(entity, request);
 
@@ -114,6 +116,12 @@ public class ScheduleEntryService {
                 .stream()
                 .map(mapper::toResponse)
                 .toList();
+    }
+
+    private void validateCrossField(ScheduleEntryRequest request) {
+        if (request.endDate().isBefore(request.startDate())) {
+            throw new IllegalArgumentException("endDate must not be before startDate");
+        }
     }
 
     ScheduleEntry findEntity(Long id) {

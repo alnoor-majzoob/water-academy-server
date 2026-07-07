@@ -101,7 +101,7 @@ class CourseControllerTest {
 
         var update = new CourseRequest("New Name", "Specialized", 5, 8, 25,
                 "Riyadh", "HR", "LOW", CourseType.ONLINE,
-                LocalDate.of(2026, 4, 1), LocalDate.of(2026, 4, 5), null, "Notes", "#F00");
+                LocalDate.of(2026, 4, 1), LocalDate.of(2026, 4, 5), null, "Notes", "#FF0000");
 
         mockMvc.perform(put("/api/workspaces/{wsId}/courses/{id}", wsId, created.id())
                         .contentType(MediaType.APPLICATION_JSON)

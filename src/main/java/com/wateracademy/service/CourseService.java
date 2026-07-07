@@ -38,6 +38,7 @@ public class CourseService {
     }
 
     public CourseResponse create(Long workspaceId, CourseRequest request) {
+        validateCrossField(request);
         var workspace = workspaceService.findEntity(workspaceId);
         var entity = mapper.toEntity(request);
         entity.setWorkspace(workspace);
@@ -45,9 +46,25 @@ public class CourseService {
     }
 
     public CourseResponse update(Long id, CourseRequest request) {
+        validateCrossField(request);
         var entity = findEntity(id);
         mapper.updateEntity(entity, request);
         return mapper.toResponse(repository.save(entity));
+    }
+
+    private void validateCrossField(CourseRequest request) {
+        if (request.earliestStart() != null && request.latestEnd() != null
+                && request.earliestStart().isAfter(request.latestEnd())) {
+            throw new IllegalArgumentException("earliestStart must be before latestEnd");
+        }
+        if (request.fixedDate() != null && request.earliestStart() != null
+                && request.fixedDate().isBefore(request.earliestStart())) {
+            throw new IllegalArgumentException("fixedDate must not be before earliestStart");
+        }
+        if (request.fixedDate() != null && request.latestEnd() != null
+                && request.fixedDate().isAfter(request.latestEnd())) {
+            throw new IllegalArgumentException("fixedDate must not be after latestEnd");
+        }
     }
 
     public void delete(Long id) {
