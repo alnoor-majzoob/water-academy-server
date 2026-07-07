@@ -17,7 +17,7 @@ import com.wateracademy.scheduler.model.Trainer;
 import com.wateracademy.scheduler.model.Venue;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
 import java.util.Set;
@@ -34,6 +34,7 @@ public class GaRunnerService {
     private final CourseAssignmentRepository courseAssignmentRepository;
     private final ScheduleEntryRepository scheduleEntryRepository;
     private final TaskService taskService;
+    private final TransactionTemplate transactionTemplate;
 
     public GaRunnerService(WorkspaceRepository workspaceRepository,
                            CourseRepository courseRepository,
@@ -42,7 +43,8 @@ public class GaRunnerService {
                            CalendarDayRepository calendarDayRepository,
                            CourseAssignmentRepository courseAssignmentRepository,
                            ScheduleEntryRepository scheduleEntryRepository,
-                           TaskService taskService) {
+                           TaskService taskService,
+                           TransactionTemplate transactionTemplate) {
         this.workspaceRepository = workspaceRepository;
         this.courseRepository = courseRepository;
         this.trainerRepository = trainerRepository;
@@ -51,10 +53,10 @@ public class GaRunnerService {
         this.courseAssignmentRepository = courseAssignmentRepository;
         this.scheduleEntryRepository = scheduleEntryRepository;
         this.taskService = taskService;
+        this.transactionTemplate = transactionTemplate;
     }
 
     @Async("gaTaskExecutor")
-    @Transactional
     public void runGaAsync(Long workspaceId, Long taskId, String mode) {
         try {
             taskService.start(taskId);
@@ -92,23 +94,29 @@ public class GaRunnerService {
                     gaCourses, gaTrainers, gaVenues, gaCalendar, config);
             ScheduleReport report = scheduler.run();
 
-            if (isUpdate) {
-                scheduleEntryRepository.deleteScheduledByWorkspaceId(workspaceId);
-            } else {
-                scheduleEntryRepository.deleteAllByWorkspaceId(workspaceId);
-            }
+            transactionTemplate.executeWithoutResult(status -> {
+                if (isUpdate) {
+                    scheduleEntryRepository.deleteScheduledByWorkspaceId(workspaceId);
+                } else {
+                    scheduleEntryRepository.deleteAllByWorkspaceId(workspaceId);
+                }
 
-            var newEntries = DomainMapper.toScheduleEntries(
-                    report, workspace, courses, trainers, venues);
+                var freshCourses = courseRepository.findByWorkspaceId(workspaceId);
+                var freshTrainers = trainerRepository.findByWorkspaceId(workspaceId);
+                var freshVenues = venueRepository.findByWorkspaceId(workspaceId);
 
-            if (isUpdate) {
-                newEntries.removeIf(e -> lockedCourseIds.contains(e.getCourse().getId()));
-            }
+                var newEntries = DomainMapper.toScheduleEntries(
+                        report, workspace, freshCourses, freshTrainers, freshVenues);
 
-            scheduleEntryRepository.saveAll(newEntries);
+                if (isUpdate) {
+                    newEntries.removeIf(e -> lockedCourseIds.contains(e.getCourse().getId()));
+                }
 
-            workspace.setStatus(WorkspaceStatus.OPTIMIZED);
-            workspaceRepository.save(workspace);
+                scheduleEntryRepository.saveAll(newEntries);
+
+                workspace.setStatus(WorkspaceStatus.OPTIMIZED);
+                workspaceRepository.save(workspace);
+            });
 
             int totalScheduled = (int) report.getEntries().stream()
                     .filter(e -> e.startDate != null).count();
