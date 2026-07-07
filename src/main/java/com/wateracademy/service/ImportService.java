@@ -27,11 +27,15 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ImportService {
+
+    private static final Logger log = LoggerFactory.getLogger(ImportService.class);
 
     private final WorkspaceService workspaceService;
     private final CourseRepository courseRepository;
@@ -108,6 +112,10 @@ public class ImportService {
 
             List<CourseAssignment> savedAssignments = courseAssignmentRepository.saveAll(assignments);
 
+            log.info("Import completed: workspaceId={}, courses={}, trainers={}, venues={}, calendarDays={}, assignments={}",
+                    workspaceId, savedCourses.size(), savedTrainers.size(),
+                    savedVenues.size(), savedCalendarDays.size(), savedAssignments.size());
+
             return new ImportResult(
                 courses.size(), savedCourses.size(),
                 trainers.size(), savedTrainers.size(),
@@ -117,8 +125,10 @@ public class ImportService {
                 null
             );
         } catch (ExcelParseException e) {
+            log.warn("Import parse error: workspaceId={}, {}", workspaceId, e.getMessage());
             throw e;
         } catch (Exception e) {
+            log.error("Import failed: workspaceId={}", workspaceId, e);
             throw new ExcelParseException("Failed to import Excel file: " + e.getMessage(), e);
         }
     }

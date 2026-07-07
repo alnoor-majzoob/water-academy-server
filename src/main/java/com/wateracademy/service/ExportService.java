@@ -28,10 +28,14 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ExportService {
+
+    private static final Logger log = LoggerFactory.getLogger(ExportService.class);
 
     private final WorkspaceService workspaceService;
     private final CourseRepository courseRepository;
@@ -65,6 +69,7 @@ public class ExportService {
 
     public byte[] exportToExcel(Long workspaceId, Set<String> sheets, String type) {
         workspaceService.findEntity(workspaceId);
+        log.info("Export requested: workspaceId={}, sheets={}, type={}", workspaceId, sheets, type);
 
         List<Course> courses = Collections.emptyList();
         List<Trainer> trainers = Collections.emptyList();

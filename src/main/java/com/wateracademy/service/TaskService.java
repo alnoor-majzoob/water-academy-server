@@ -9,12 +9,16 @@ import com.wateracademy.exception.TaskAlreadyRunningException;
 import com.wateracademy.repository.TaskRepository;
 import java.time.Instant;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
 public class TaskService {
+
+    private static final Logger log = LoggerFactory.getLogger(TaskService.class);
 
     private final TaskRepository repository;
     private final TaskMapper mapper;
@@ -58,14 +62,16 @@ public class TaskService {
         var task = findEntity(id);
         task.setStatus(TaskStatus.RUNNING);
         task.setStartedAt(Instant.now());
+        log.info("Task started: id={}, workspaceId={}", id, task.getWorkspace().getId());
         return mapper.toResponse(repository.save(task));
     }
 
-    public TaskResponse complete(Long id, String log) {
+    public TaskResponse complete(Long id, String taskLog) {
         var task = findEntity(id);
         task.setStatus(TaskStatus.COMPLETED);
         task.setCompletedAt(Instant.now());
-        task.setLog(log);
+        task.setLog(taskLog);
+        log.info("Task completed: id={}, workspaceId={}", id, task.getWorkspace().getId());
         return mapper.toResponse(repository.save(task));
     }
 
@@ -74,6 +80,7 @@ public class TaskService {
         task.setStatus(TaskStatus.FAILED);
         task.setCompletedAt(Instant.now());
         task.setLog(errorLog);
+        log.error("Task failed: id={}, workspaceId={}, error={}", id, task.getWorkspace().getId(), errorLog);
         return mapper.toResponse(repository.save(task));
     }
 

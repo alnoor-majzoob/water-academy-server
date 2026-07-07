@@ -10,12 +10,16 @@ import com.wateracademy.exception.ResourceNotFoundException;
 import com.wateracademy.repository.ScheduleEntryRepository;
 import java.time.LocalDate;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
 public class ScheduleEntryService {
+
+    private static final Logger log = LoggerFactory.getLogger(ScheduleEntryService.class);
 
     private final ScheduleEntryRepository repository;
     private final ScheduleEntryMapper mapper;
@@ -69,6 +73,13 @@ public class ScheduleEntryService {
 
         detectAndSetConflicts(entity);
 
+        if (entity.getConflictNotes() != null) {
+            log.warn("Schedule conflict detected: workspaceId={}, courseId={}, trainerId={}, venueId={}, notes={}",
+                    workspaceId, entity.getCourse().getId(), entity.getTrainer().getId(),
+                    entity.getVenue() != null ? entity.getVenue().getId() : null,
+                    entity.getConflictNotes());
+        }
+
         return mapper.toResponse(repository.save(entity));
     }
 
@@ -91,6 +102,7 @@ public class ScheduleEntryService {
     public ScheduleEntryResponse updateStatus(Long id, ScheduleStatus newStatus) {
         var entity = findEntity(id);
         validateStatusTransition(entity.getStatus(), newStatus);
+        log.info("Schedule entry status change: id={}, {} -> {}", id, entity.getStatus(), newStatus);
         entity.setStatus(newStatus);
         return mapper.toResponse(repository.save(entity));
     }

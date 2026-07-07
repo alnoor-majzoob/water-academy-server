@@ -15,6 +15,8 @@ import com.wateracademy.scheduler.model.Calendar;
 import com.wateracademy.scheduler.model.Course;
 import com.wateracademy.scheduler.model.Trainer;
 import com.wateracademy.scheduler.model.Venue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -25,6 +27,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class GaRunnerService {
+
+    private static final Logger log = LoggerFactory.getLogger(GaRunnerService.class);
 
     private final WorkspaceRepository workspaceRepository;
     private final CourseRepository courseRepository;
@@ -89,10 +93,20 @@ public class GaRunnerService {
             List<Venue> gaVenues = DomainMapper.toGaVenues(venues);
             Calendar gaCalendar = DomainMapper.toGaCalendar(calendarDays);
 
+            log.info("Starting GA scheduling: workspaceId={}, taskId={}, mode={}, courses={}, trainers={}, venues={}",
+                    workspaceId, taskId, mode, gaCourses.size(), gaTrainers.size(), gaVenues.size());
+
             var config = new com.wateracademy.scheduler.SchedulerService.Config();
             var scheduler = new com.wateracademy.scheduler.SchedulerService(
                     gaCourses, gaTrainers, gaVenues, gaCalendar, config);
             ScheduleReport report = scheduler.run();
+
+            log.info("GA completed: workspaceId={}, taskId={}, scheduled={}/{}, fitness={}, elapsed={}ms",
+                    workspaceId, taskId,
+                    report.getEntries().stream().filter(e -> e.startDate != null).count(),
+                    report.getEntries().size(),
+                    String.format("%.1f", report.bestFitness),
+                    report.elapsedMs);
 
             transactionTemplate.executeWithoutResult(status -> {
                 if (isUpdate) {
@@ -123,7 +137,7 @@ public class GaRunnerService {
             int totalCourses = report.getEntries().size();
             int unscheduled = report.getUnschedulable().size();
 
-            String log = String.format(
+            String taskLog = String.format(
                     "GA completed: %d/%d courses scheduled, %d unschedulable. " +
                     "Fitness: %.1f. Elapsed: %dms (μ=%d, λ=%d)",
                     totalScheduled, totalCourses, unscheduled,
@@ -131,18 +145,19 @@ public class GaRunnerService {
                     report.populationSize, report.offspringCount);
 
             if (!report.getUnschedulable().isEmpty()) {
-                StringBuilder sb = new StringBuilder(log);
+                StringBuilder sb = new StringBuilder(taskLog);
                 sb.append("\n\nUnschedulable courses:");
                 for (var u : report.getUnschedulable()) {
                     sb.append("\n  [").append(u.courseId).append("] ")
                       .append(u.courseName).append(" -> ").append(u.reason);
                 }
-                log = sb.toString();
+                taskLog = sb.toString();
             }
 
-            taskService.complete(taskId, log);
+            taskService.complete(taskId, taskLog);
 
         } catch (Exception e) {
+            log.error("GA failed: workspaceId={}, taskId={}", workspaceId, taskId, e);
             taskService.fail(taskId,
                     "GA failed: " + e.getClass().getSimpleName() + ": " + e.getMessage());
         }
