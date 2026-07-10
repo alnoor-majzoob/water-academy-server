@@ -7,6 +7,7 @@ import com.wateracademy.repository.CourseRepository;
 import com.wateracademy.repository.ScheduleEntryRepository;
 import com.wateracademy.repository.TrainerRepository;
 import com.wateracademy.repository.VenueRepository;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -53,7 +54,7 @@ public class DashboardService {
                 coursesByType,
                 scheduleEntryRepository.findTrainerUtilization(workspaceId),
                 scheduleEntryRepository.findUpcomingDashboardSessions(
-                        workspaceId, ScheduleStatus.COMPLETED, PageRequest.of(0, 4)));
+                        workspaceId, ScheduleStatus.COMPLETED, LocalDate.now().plusDays(1), PageRequest.of(0, 5)));
     }
 
     private List<Long> coursesByMonth(Long workspaceId) {

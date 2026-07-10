@@ -56,12 +56,13 @@ public interface ScheduleEntryRepository extends JpaRepository<ScheduleEntry, Lo
                 CASE WHEN s.conflictNotes IS NOT NULL AND s.conflictNotes <> '' THEN true ELSE false END
             )
             FROM ScheduleEntry s
-            WHERE s.workspace.id = :workspaceId AND s.status <> :completedStatus
+            WHERE s.workspace.id = :workspaceId AND s.status <> :completedStatus AND s.startDate >= :fromDate
             ORDER BY s.startDate ASC, s.id ASC
             """)
     List<DashboardResponse.UpcomingSession> findUpcomingDashboardSessions(
             @Param("workspaceId") Long workspaceId,
             @Param("completedStatus") ScheduleStatus completedStatus,
+            @Param("fromDate") LocalDate fromDate,
             Pageable pageable);
 
     @Modifying
