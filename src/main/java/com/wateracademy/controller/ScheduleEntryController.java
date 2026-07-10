@@ -2,7 +2,10 @@ package com.wateracademy.controller;
 
 import com.wateracademy.dto.request.ScheduleEntryRequest;
 import com.wateracademy.dto.request.ScheduleEntryStatusRequest;
+import com.wateracademy.dto.response.PageResponse;
+import com.wateracademy.dto.response.ScheduleEntryFilterOptionsResponse;
 import com.wateracademy.dto.response.ScheduleEntryResponse;
+import com.wateracademy.entity.enums.ScheduleStatus;
 import com.wateracademy.service.ScheduleEntryService;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -31,8 +34,32 @@ public class ScheduleEntryController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ScheduleEntryResponse>> findAll(@PathVariable Long workspaceId) {
+    public ResponseEntity<PageResponse<ScheduleEntryResponse>> findAll(
+            @PathVariable Long workspaceId,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) List<String> sort,
+            @RequestParam(required = false) ScheduleStatus status,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) String month,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) Long trainerId,
+            @RequestParam(required = false) Long venueId,
+            @RequestParam(required = false) Long courseId,
+            @RequestParam(required = false) Boolean hasConflict) {
+        return ResponseEntity.ok(service.findPageByWorkspaceId(
+                workspaceId, page, size, sort, status, city, month, from, to, trainerId, venueId, courseId, hasConflict));
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<ScheduleEntryResponse>> findAllUnpaged(@PathVariable Long workspaceId) {
         return ResponseEntity.ok(service.findAllByWorkspaceId(workspaceId));
+    }
+
+    @GetMapping("/filter-options")
+    public ResponseEntity<ScheduleEntryFilterOptionsResponse> filterOptions(@PathVariable Long workspaceId) {
+        return ResponseEntity.ok(service.filterOptions(workspaceId));
     }
 
     @GetMapping("/{id}")

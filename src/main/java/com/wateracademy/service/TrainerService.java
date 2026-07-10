@@ -2,17 +2,27 @@ package com.wateracademy.service;
 
 import com.wateracademy.dto.mapper.TrainerMapper;
 import com.wateracademy.dto.request.TrainerRequest;
+import com.wateracademy.dto.response.PageResponse;
+import com.wateracademy.dto.response.TrainerFilterOptionsResponse;
 import com.wateracademy.dto.response.TrainerResponse;
 import com.wateracademy.entity.Trainer;
 import com.wateracademy.exception.ResourceNotFoundException;
 import com.wateracademy.repository.TrainerRepository;
+import com.wateracademy.util.PaginationUtils;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
 public class TrainerService {
+
+    private static final Set<String> SORT_FIELDS = Set.of(
+            "id", "externalId", "name", "city", "trainerType", "maxDaysPerMonth",
+            "maxConsecutiveDays", "costPerDay", "createdAt", "updatedAt");
 
     private final TrainerRepository repository;
     private final TrainerMapper mapper;
@@ -30,6 +40,35 @@ public class TrainerService {
         return repository.findByWorkspaceId(workspaceId).stream()
                 .map(mapper::toResponse)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<TrainerResponse> findPageByWorkspaceId(Long workspaceId, Integer page, Integer size,
+                                                               List<String> sort, String search, String city,
+                                                               String trainerType, String specialty) {
+        var pageable = PaginationUtils.pageable(page, size, sort, SORT_FIELDS, Sort.by("name").ascending());
+        return PageResponse.from(repository.searchByWorkspaceId(
+                workspaceId,
+                PaginationUtils.like(search),
+                blankToNull(city),
+                blankToNull(trainerType),
+                PaginationUtils.like(specialty),
+                pageable).map(mapper::toResponse));
+    }
+
+    @Transactional(readOnly = true)
+    public TrainerFilterOptionsResponse filterOptions(Long workspaceId) {
+        var specialties = repository.findByWorkspaceId(workspaceId).stream()
+                .flatMap(trainer -> Arrays.stream((trainer.getSpecialties() == null ? "" : trainer.getSpecialties()).split(",")))
+                .map(String::trim)
+                .filter(value -> !value.isBlank())
+                .distinct()
+                .sorted()
+                .toList();
+        return new TrainerFilterOptionsResponse(
+                repository.findDistinctCities(workspaceId),
+                repository.findDistinctTrainerTypes(workspaceId),
+                specialties);
     }
 
     @Transactional(readOnly = true)
@@ -58,5 +97,9 @@ public class TrainerService {
     Trainer findEntity(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Trainer", id));
+    }
+
+    private String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value;
     }
 }

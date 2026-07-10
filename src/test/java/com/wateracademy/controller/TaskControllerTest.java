@@ -97,7 +97,7 @@ class TaskControllerTest {
 
         mockMvc.perform(get("/api/workspaces/{wsId}/tasks", wsId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2));
+                .andExpect(jsonPath("$.totalElements").value(2));
     }
 
     @Test

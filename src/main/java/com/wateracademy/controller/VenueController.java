@@ -1,7 +1,10 @@
 package com.wateracademy.controller;
 
 import com.wateracademy.dto.request.VenueRequest;
+import com.wateracademy.dto.response.PageResponse;
+import com.wateracademy.dto.response.VenueFilterOptionsResponse;
 import com.wateracademy.dto.response.VenueResponse;
+import com.wateracademy.entity.enums.CourseType;
 import com.wateracademy.service.VenueService;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -27,8 +31,28 @@ public class VenueController {
     }
 
     @GetMapping
-    public ResponseEntity<List<VenueResponse>> findAll(@PathVariable Long workspaceId) {
+    public ResponseEntity<PageResponse<VenueResponse>> findAll(
+            @PathVariable Long workspaceId,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) List<String> sort,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) CourseType type,
+            @RequestParam(required = false) Integer minCapacity,
+            @RequestParam(required = false) Integer maxCapacity) {
+        return ResponseEntity.ok(service.findPageByWorkspaceId(
+                workspaceId, page, size, sort, search, city, type, minCapacity, maxCapacity));
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<VenueResponse>> findAllUnpaged(@PathVariable Long workspaceId) {
         return ResponseEntity.ok(service.findAllByWorkspaceId(workspaceId));
+    }
+
+    @GetMapping("/filter-options")
+    public ResponseEntity<VenueFilterOptionsResponse> filterOptions(@PathVariable Long workspaceId) {
+        return ResponseEntity.ok(service.filterOptions(workspaceId));
     }
 
     @GetMapping("/{id}")

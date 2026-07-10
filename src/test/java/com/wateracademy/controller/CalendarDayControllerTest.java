@@ -96,7 +96,7 @@ class CalendarDayControllerTest {
 
         mockMvc.perform(get("/api/workspaces/{wsId}/calendar-days", wsId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
+                .andExpect(jsonPath("$.totalElements").value(1));
     }
 
     @Test

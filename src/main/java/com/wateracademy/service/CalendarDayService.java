@@ -3,19 +3,26 @@ package com.wateracademy.service;
 import com.wateracademy.dto.mapper.CalendarDayMapper;
 import com.wateracademy.dto.request.CalendarDayRequest;
 import com.wateracademy.dto.response.CalendarDayResponse;
+import com.wateracademy.dto.response.PageResponse;
 import com.wateracademy.entity.CalendarDay;
 import com.wateracademy.exception.DuplicateResourceException;
 import com.wateracademy.exception.ResourceNotFoundException;
 import com.wateracademy.repository.CalendarDayRepository;
+import com.wateracademy.util.PaginationUtils;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
 public class CalendarDayService {
+
+    private static final Set<String> SORT_FIELDS = Set.of("id", "date", "isWorkDay", "isHoliday", "createdAt");
 
     private static final Logger log = LoggerFactory.getLogger(CalendarDayService.class);
 
@@ -35,6 +42,15 @@ public class CalendarDayService {
         return repository.findByWorkspaceId(workspaceId).stream()
                 .map(mapper::toResponse)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<CalendarDayResponse> findPageByWorkspaceId(Long workspaceId, Integer page, Integer size,
+                                                                   List<String> sort, LocalDate from, LocalDate to,
+                                                                   Boolean isWorkDay, Boolean isHoliday) {
+        var pageable = PaginationUtils.pageable(page, size, sort, SORT_FIELDS, Sort.by("date").ascending());
+        return PageResponse.from(repository.searchByWorkspaceId(
+                workspaceId, from, to, isWorkDay, isHoliday, pageable).map(mapper::toResponse));
     }
 
     @Transactional(readOnly = true)

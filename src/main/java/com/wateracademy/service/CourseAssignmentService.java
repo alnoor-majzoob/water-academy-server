@@ -3,17 +3,23 @@ package com.wateracademy.service;
 import com.wateracademy.dto.mapper.CourseAssignmentMapper;
 import com.wateracademy.dto.request.CourseAssignmentRequest;
 import com.wateracademy.dto.response.CourseAssignmentResponse;
+import com.wateracademy.dto.response.PageResponse;
 import com.wateracademy.entity.CourseAssignment;
 import com.wateracademy.exception.DuplicateResourceException;
 import com.wateracademy.exception.ResourceNotFoundException;
 import com.wateracademy.repository.CourseAssignmentRepository;
+import com.wateracademy.util.PaginationUtils;
 import java.util.List;
+import java.util.Set;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
 public class CourseAssignmentService {
+
+    private static final Set<String> SORT_FIELDS = Set.of("id", "createdAt", "updatedAt");
 
     private final CourseAssignmentRepository repository;
     private final CourseAssignmentMapper mapper;
@@ -38,6 +44,15 @@ public class CourseAssignmentService {
         return repository.findByWorkspaceId(workspaceId).stream()
                 .map(mapper::toResponse)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<CourseAssignmentResponse> findPageByWorkspaceId(Long workspaceId, Integer page, Integer size,
+                                                                        List<String> sort, Long courseId, Long trainerId,
+                                                                        String search) {
+        var pageable = PaginationUtils.pageable(page, size, sort, SORT_FIELDS, Sort.by("createdAt").descending());
+        return PageResponse.from(repository.searchByWorkspaceId(
+                workspaceId, courseId, trainerId, PaginationUtils.like(search), pageable).map(mapper::toResponse));
     }
 
     @Transactional(readOnly = true)

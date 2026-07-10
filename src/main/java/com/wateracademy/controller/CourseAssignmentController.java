@@ -2,6 +2,7 @@ package com.wateracademy.controller;
 
 import com.wateracademy.dto.request.CourseAssignmentRequest;
 import com.wateracademy.dto.response.CourseAssignmentResponse;
+import com.wateracademy.dto.response.PageResponse;
 import com.wateracademy.service.CourseAssignmentService;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -26,7 +28,20 @@ public class CourseAssignmentController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CourseAssignmentResponse>> findAll(@PathVariable Long workspaceId) {
+    public ResponseEntity<PageResponse<CourseAssignmentResponse>> findAll(
+            @PathVariable Long workspaceId,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) List<String> sort,
+            @RequestParam(required = false) Long courseId,
+            @RequestParam(required = false) Long trainerId,
+            @RequestParam(required = false) String search) {
+        return ResponseEntity.ok(service.findPageByWorkspaceId(
+                workspaceId, page, size, sort, courseId, trainerId, search));
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<CourseAssignmentResponse>> findAllUnpaged(@PathVariable Long workspaceId) {
         return ResponseEntity.ok(service.findAllByWorkspaceId(workspaceId));
     }
 

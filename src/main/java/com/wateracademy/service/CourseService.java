@@ -2,17 +2,27 @@ package com.wateracademy.service;
 
 import com.wateracademy.dto.mapper.CourseMapper;
 import com.wateracademy.dto.request.CourseRequest;
+import com.wateracademy.dto.response.CourseFilterOptionsResponse;
 import com.wateracademy.dto.response.CourseResponse;
+import com.wateracademy.dto.response.PageResponse;
 import com.wateracademy.entity.Course;
+import com.wateracademy.entity.enums.CourseType;
 import com.wateracademy.exception.ResourceNotFoundException;
 import com.wateracademy.repository.CourseRepository;
 import java.util.List;
+import java.util.Set;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.wateracademy.util.PaginationUtils;
 
 @Service
 @Transactional
 public class CourseService {
+
+    private static final Set<String> SORT_FIELDS = Set.of(
+            "id", "externalId", "name", "specialization", "durationDays", "expectedTrainees",
+            "city", "beneficiary", "priority", "type", "earliestStart", "latestEnd", "createdAt", "updatedAt");
 
     private final CourseRepository repository;
     private final CourseMapper mapper;
@@ -30,6 +40,30 @@ public class CourseService {
         return repository.findByWorkspaceId(workspaceId).stream()
                 .map(mapper::toResponse)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<CourseResponse> findPageByWorkspaceId(Long workspaceId, Integer page, Integer size,
+                                                              List<String> sort, String search, CourseType type,
+                                                              String priority, String city, String specialization) {
+        var pageable = PaginationUtils.pageable(page, size, sort, SORT_FIELDS, Sort.by("name").ascending());
+        return PageResponse.from(repository.searchByWorkspaceId(
+                workspaceId,
+                PaginationUtils.like(search),
+                type,
+                blankToNull(priority),
+                blankToNull(city),
+                blankToNull(specialization),
+                pageable).map(mapper::toResponse));
+    }
+
+    @Transactional(readOnly = true)
+    public CourseFilterOptionsResponse filterOptions(Long workspaceId) {
+        return new CourseFilterOptionsResponse(
+                repository.findDistinctCities(workspaceId),
+                List.of(CourseType.values()),
+                repository.findDistinctPriorities(workspaceId),
+                repository.findDistinctSpecializations(workspaceId));
     }
 
     @Transactional(readOnly = true)
@@ -75,5 +109,9 @@ public class CourseService {
     Course findEntity(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Course", id));
+    }
+
+    private String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value;
     }
 }

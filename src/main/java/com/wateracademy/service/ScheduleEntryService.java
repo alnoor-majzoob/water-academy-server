@@ -2,16 +2,22 @@ package com.wateracademy.service;
 
 import com.wateracademy.dto.mapper.ScheduleEntryMapper;
 import com.wateracademy.dto.request.ScheduleEntryRequest;
+import com.wateracademy.dto.response.PageResponse;
+import com.wateracademy.dto.response.ScheduleEntryFilterOptionsResponse;
 import com.wateracademy.dto.response.ScheduleEntryResponse;
 import com.wateracademy.entity.ScheduleEntry;
 import com.wateracademy.entity.enums.ScheduleStatus;
 import com.wateracademy.exception.InvalidStatusTransitionException;
 import com.wateracademy.exception.ResourceNotFoundException;
 import com.wateracademy.repository.ScheduleEntryRepository;
+import com.wateracademy.util.PaginationUtils;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class ScheduleEntryService {
 
     private static final Logger log = LoggerFactory.getLogger(ScheduleEntryService.class);
+    private static final Set<String> SORT_FIELDS = Set.of(
+            "id", "startDate", "endDate", "status", "createdAt", "updatedAt");
 
     private final ScheduleEntryRepository repository;
     private final ScheduleEntryMapper mapper;
@@ -47,6 +55,34 @@ public class ScheduleEntryService {
         return repository.findByWorkspaceId(workspaceId).stream()
                 .map(mapper::toResponse)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<ScheduleEntryResponse> findPageByWorkspaceId(Long workspaceId, Integer page, Integer size,
+                                                                     List<String> sort, ScheduleStatus status, String city,
+                                                                     String month, LocalDate from, LocalDate to,
+                                                                     Long trainerId, Long venueId, Long courseId,
+                                                                     Boolean hasConflict) {
+        var range = monthRange(month, from, to);
+        var pageable = PaginationUtils.pageable(page, size, sort, SORT_FIELDS, Sort.by("startDate").ascending());
+        return PageResponse.from(repository.searchByWorkspaceId(
+                workspaceId, status, blankToNull(city), range.from(), range.to(), trainerId, venueId, courseId,
+                hasConflict, pageable).map(mapper::toResponse));
+    }
+
+    @Transactional(readOnly = true)
+    public ScheduleEntryFilterOptionsResponse filterOptions(Long workspaceId) {
+        var months = repository.findByWorkspaceId(workspaceId).stream()
+                .map(ScheduleEntry::getStartDate)
+                .map(date -> date.format(DateTimeFormatter.ofPattern("yyyy-MM")))
+                .distinct()
+                .sorted()
+                .toList();
+        return new ScheduleEntryFilterOptionsResponse(
+                repository.findDistinctCities(workspaceId),
+                List.of(ScheduleStatus.values()),
+                months,
+                List.of(Boolean.TRUE, Boolean.FALSE));
     }
 
     @Transactional(readOnly = true)
@@ -185,5 +221,20 @@ public class ScheduleEntryService {
             throw new InvalidStatusTransitionException(
                     "Can only transition CONFIRMED to COMPLETED");
         }
+    }
+
+    private DateRange monthRange(String month, LocalDate from, LocalDate to) {
+        if (month == null || month.isBlank()) {
+            return new DateRange(from, to);
+        }
+        var start = LocalDate.parse(month.trim() + "-01");
+        return new DateRange(start, start.withDayOfMonth(start.lengthOfMonth()));
+    }
+
+    private String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value;
+    }
+
+    private record DateRange(LocalDate from, LocalDate to) {
     }
 }

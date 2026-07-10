@@ -104,7 +104,7 @@ class CourseAssignmentControllerTest {
 
         mockMvc.perform(get("/api/workspaces/{wsId}/assignments", wsId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
+                .andExpect(jsonPath("$.totalElements").value(1));
     }
 
     @Test

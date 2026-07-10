@@ -45,8 +45,8 @@ class CourseControllerTest {
         var wsId = createWorkspace();
         mockMvc.perform(get("/api/workspaces/{wsId}/courses", wsId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$.length()").value(0));
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.totalElements").value(0));
     }
 
     @Test
@@ -143,6 +143,6 @@ class CourseControllerTest {
 
         mockMvc.perform(get("/api/workspaces/{wsId}/courses", ws2))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(0));
+                .andExpect(jsonPath("$.totalElements").value(0));
     }
 }
