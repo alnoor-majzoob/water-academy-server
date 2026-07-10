@@ -13,6 +13,7 @@ public record ScheduleEntryResponse(
     String trainerName,
     Long venueId,
     String venueName,
+    String venueCity,
     LocalDate startDate,
     LocalDate endDate,
     ScheduleStatus status,

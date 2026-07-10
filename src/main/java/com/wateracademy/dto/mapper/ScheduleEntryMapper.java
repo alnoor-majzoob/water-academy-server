@@ -18,6 +18,7 @@ public class ScheduleEntryMapper {
             entity.getTrainer().getName(),
             entity.getVenue() != null ? entity.getVenue().getId() : null,
             entity.getVenue() != null ? entity.getVenue().getName() : null,
+            entity.getVenue() != null ? entity.getVenue().getCity() : null,
             entity.getStartDate(),
             entity.getEndDate(),
             entity.getStatus(),
