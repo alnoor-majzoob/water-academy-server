@@ -9,7 +9,9 @@ import com.wateracademy.exception.DuplicateResourceException;
 import com.wateracademy.exception.ResourceNotFoundException;
 import com.wateracademy.repository.CalendarDayRepository;
 import com.wateracademy.util.PaginationUtils;
+import jakarta.persistence.criteria.Predicate;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -49,8 +51,16 @@ public class CalendarDayService {
                                                                    List<String> sort, LocalDate from, LocalDate to,
                                                                    Boolean isWorkDay, Boolean isHoliday) {
         var pageable = PaginationUtils.pageable(page, size, sort, SORT_FIELDS, Sort.by("date").ascending());
-        return PageResponse.from(repository.searchByWorkspaceId(
-                workspaceId, from, to, isWorkDay, isHoliday, pageable).map(mapper::toResponse));
+        var spec = (org.springframework.data.jpa.domain.Specification<CalendarDay>) (root, query, cb) -> {
+            var predicates = new ArrayList<Predicate>();
+            predicates.add(cb.equal(root.get("workspace").get("id"), workspaceId));
+            if (from != null) predicates.add(cb.greaterThanOrEqualTo(root.get("date"), from));
+            if (to != null) predicates.add(cb.lessThanOrEqualTo(root.get("date"), to));
+            if (isWorkDay != null) predicates.add(cb.equal(root.get("isWorkDay"), isWorkDay));
+            if (isHoliday != null) predicates.add(cb.equal(root.get("isHoliday"), isHoliday));
+            return cb.and(predicates.toArray(Predicate[]::new));
+        };
+        return PageResponse.from(repository.findAll(spec, pageable).map(mapper::toResponse));
     }
 
     @Transactional(readOnly = true)

@@ -10,7 +10,9 @@ import com.wateracademy.exception.ResourceNotFoundException;
 import com.wateracademy.exception.TaskAlreadyRunningException;
 import com.wateracademy.repository.TaskRepository;
 import com.wateracademy.util.PaginationUtils;
+import jakarta.persistence.criteria.Predicate;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -49,8 +51,14 @@ public class TaskService {
     public PageResponse<TaskResponse> findPageByWorkspaceId(Long workspaceId, Integer page, Integer size,
                                                             List<String> sort, TaskStatus status, String type) {
         var pageable = PaginationUtils.pageable(page, size, sort, SORT_FIELDS, Sort.by("createdAt").descending());
-        return PageResponse.from(repository.searchByWorkspaceId(
-                workspaceId, status, blankToNull(type), pageable).map(mapper::toResponse));
+        var spec = (org.springframework.data.jpa.domain.Specification<Task>) (root, query, cb) -> {
+            var predicates = new ArrayList<Predicate>();
+            predicates.add(cb.equal(root.get("workspace").get("id"), workspaceId));
+            if (status != null) predicates.add(cb.equal(root.get("status"), status));
+            if (blankToNull(type) != null) predicates.add(cb.equal(root.get("mode"), type));
+            return cb.and(predicates.toArray(Predicate[]::new));
+        };
+        return PageResponse.from(repository.findAll(spec, pageable).map(mapper::toResponse));
     }
 
     @Transactional(readOnly = true)

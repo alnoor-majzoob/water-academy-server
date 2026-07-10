@@ -9,6 +9,8 @@ import com.wateracademy.entity.Trainer;
 import com.wateracademy.exception.ResourceNotFoundException;
 import com.wateracademy.repository.TrainerRepository;
 import com.wateracademy.util.PaginationUtils;
+import jakarta.persistence.criteria.Predicate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -47,13 +49,23 @@ public class TrainerService {
                                                                List<String> sort, String search, String city,
                                                                String trainerType, String specialty) {
         var pageable = PaginationUtils.pageable(page, size, sort, SORT_FIELDS, Sort.by("name").ascending());
-        return PageResponse.from(repository.searchByWorkspaceId(
-                workspaceId,
-                PaginationUtils.like(search),
-                blankToNull(city),
-                blankToNull(trainerType),
-                PaginationUtils.like(specialty),
-                pageable).map(mapper::toResponse));
+        var spec = (org.springframework.data.jpa.domain.Specification<Trainer>) (root, query, cb) -> {
+            var predicates = new ArrayList<Predicate>();
+            predicates.add(cb.equal(root.get("workspace").get("id"), workspaceId));
+            var like = PaginationUtils.like(search);
+            if (like != null) {
+                predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("name")), like),
+                        cb.like(cb.lower(root.get("externalId")), like),
+                        cb.like(cb.lower(root.get("specialties")), like)));
+            }
+            if (blankToNull(city) != null) predicates.add(cb.equal(root.get("city"), city));
+            if (blankToNull(trainerType) != null) predicates.add(cb.equal(root.get("trainerType"), trainerType));
+            var specialtyLike = PaginationUtils.like(specialty);
+            if (specialtyLike != null) predicates.add(cb.like(cb.lower(root.get("specialties")), specialtyLike));
+            return cb.and(predicates.toArray(Predicate[]::new));
+        };
+        return PageResponse.from(repository.findAll(spec, pageable).map(mapper::toResponse));
     }
 
     @Transactional(readOnly = true)

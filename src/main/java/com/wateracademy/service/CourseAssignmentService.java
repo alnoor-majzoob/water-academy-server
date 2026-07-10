@@ -9,6 +9,8 @@ import com.wateracademy.exception.DuplicateResourceException;
 import com.wateracademy.exception.ResourceNotFoundException;
 import com.wateracademy.repository.CourseAssignmentRepository;
 import com.wateracademy.util.PaginationUtils;
+import jakarta.persistence.criteria.Predicate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.springframework.data.domain.Sort;
@@ -51,8 +53,20 @@ public class CourseAssignmentService {
                                                                         List<String> sort, Long courseId, Long trainerId,
                                                                         String search) {
         var pageable = PaginationUtils.pageable(page, size, sort, SORT_FIELDS, Sort.by("createdAt").descending());
-        return PageResponse.from(repository.searchByWorkspaceId(
-                workspaceId, courseId, trainerId, PaginationUtils.like(search), pageable).map(mapper::toResponse));
+        var spec = (org.springframework.data.jpa.domain.Specification<CourseAssignment>) (root, query, cb) -> {
+            var predicates = new ArrayList<Predicate>();
+            predicates.add(cb.equal(root.get("workspace").get("id"), workspaceId));
+            if (courseId != null) predicates.add(cb.equal(root.get("course").get("id"), courseId));
+            if (trainerId != null) predicates.add(cb.equal(root.get("trainer").get("id"), trainerId));
+            var like = PaginationUtils.like(search);
+            if (like != null) {
+                predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("course").get("name")), like),
+                        cb.like(cb.lower(root.get("trainer").get("name")), like)));
+            }
+            return cb.and(predicates.toArray(Predicate[]::new));
+        };
+        return PageResponse.from(repository.findAll(spec, pageable).map(mapper::toResponse));
     }
 
     @Transactional(readOnly = true)

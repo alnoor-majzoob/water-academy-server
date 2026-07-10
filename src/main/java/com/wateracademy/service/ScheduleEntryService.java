@@ -11,8 +11,11 @@ import com.wateracademy.exception.InvalidStatusTransitionException;
 import com.wateracademy.exception.ResourceNotFoundException;
 import com.wateracademy.repository.ScheduleEntryRepository;
 import com.wateracademy.util.PaginationUtils;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -65,9 +68,22 @@ public class ScheduleEntryService {
                                                                      Boolean hasConflict) {
         var range = monthRange(month, from, to);
         var pageable = PaginationUtils.pageable(page, size, sort, SORT_FIELDS, Sort.by("startDate").ascending());
-        return PageResponse.from(repository.searchByWorkspaceId(
-                workspaceId, status, blankToNull(city), range.from(), range.to(), trainerId, venueId, courseId,
-                hasConflict, pageable).map(mapper::toResponse));
+        var spec = (org.springframework.data.jpa.domain.Specification<ScheduleEntry>) (root, query, cb) -> {
+            var predicates = new ArrayList<Predicate>();
+            var venue = root.join("venue", JoinType.LEFT);
+            predicates.add(cb.equal(root.get("workspace").get("id"), workspaceId));
+            if (status != null) predicates.add(cb.equal(root.get("status"), status));
+            if (blankToNull(city) != null) predicates.add(cb.equal(venue.get("city"), city));
+            if (range.from() != null) predicates.add(cb.greaterThanOrEqualTo(root.get("endDate"), range.from()));
+            if (range.to() != null) predicates.add(cb.lessThanOrEqualTo(root.get("startDate"), range.to()));
+            if (trainerId != null) predicates.add(cb.equal(root.get("trainer").get("id"), trainerId));
+            if (venueId != null) predicates.add(cb.equal(venue.get("id"), venueId));
+            if (courseId != null) predicates.add(cb.equal(root.get("course").get("id"), courseId));
+            if (hasConflict != null && hasConflict) predicates.add(cb.and(cb.isNotNull(root.get("conflictNotes")), cb.notEqual(root.get("conflictNotes"), "")));
+            if (hasConflict != null && !hasConflict) predicates.add(cb.or(cb.isNull(root.get("conflictNotes")), cb.equal(root.get("conflictNotes"), "")));
+            return cb.and(predicates.toArray(Predicate[]::new));
+        };
+        return PageResponse.from(repository.findAll(spec, pageable).map(mapper::toResponse));
     }
 
     @Transactional(readOnly = true)

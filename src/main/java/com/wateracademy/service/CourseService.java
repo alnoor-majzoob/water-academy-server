@@ -9,12 +9,14 @@ import com.wateracademy.entity.Course;
 import com.wateracademy.entity.enums.CourseType;
 import com.wateracademy.exception.ResourceNotFoundException;
 import com.wateracademy.repository.CourseRepository;
+import com.wateracademy.util.PaginationUtils;
+import jakarta.persistence.criteria.Predicate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.wateracademy.util.PaginationUtils;
 
 @Service
 @Transactional
@@ -47,14 +49,23 @@ public class CourseService {
                                                               List<String> sort, String search, CourseType type,
                                                               String priority, String city, String specialization) {
         var pageable = PaginationUtils.pageable(page, size, sort, SORT_FIELDS, Sort.by("name").ascending());
-        return PageResponse.from(repository.searchByWorkspaceId(
-                workspaceId,
-                PaginationUtils.like(search),
-                type,
-                blankToNull(priority),
-                blankToNull(city),
-                blankToNull(specialization),
-                pageable).map(mapper::toResponse));
+        var spec = (org.springframework.data.jpa.domain.Specification<Course>) (root, query, cb) -> {
+            var predicates = new ArrayList<Predicate>();
+            predicates.add(cb.equal(root.get("workspace").get("id"), workspaceId));
+            var like = PaginationUtils.like(search);
+            if (like != null) {
+                predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("name")), like),
+                        cb.like(cb.lower(root.get("externalId")), like),
+                        cb.like(cb.lower(root.get("beneficiary")), like)));
+            }
+            if (type != null) predicates.add(cb.equal(root.get("type"), type));
+            if (blankToNull(priority) != null) predicates.add(cb.equal(root.get("priority"), priority));
+            if (blankToNull(city) != null) predicates.add(cb.equal(root.get("city"), city));
+            if (blankToNull(specialization) != null) predicates.add(cb.equal(root.get("specialization"), specialization));
+            return cb.and(predicates.toArray(Predicate[]::new));
+        };
+        return PageResponse.from(repository.findAll(spec, pageable).map(mapper::toResponse));
     }
 
     @Transactional(readOnly = true)
