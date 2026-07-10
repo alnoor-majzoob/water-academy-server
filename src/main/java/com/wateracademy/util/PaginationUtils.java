@@ -35,18 +35,25 @@ public final class PaginationUtils {
         }
 
         var orders = new ArrayList<Sort.Order>();
-        for (var raw : values) {
+        for (int i = 0; i < values.size(); i++) {
+            var raw = values.get(i);
             if (raw == null || raw.isBlank()) continue;
             var parts = raw.split(",");
             var field = parts[0].trim();
             if (!allowedSorts.contains(field)) {
                 throw new IllegalArgumentException("Unsupported sort field: " + field);
             }
-            var direction = parts.length > 1 && "desc".equalsIgnoreCase(parts[1].trim())
-                    ? Sort.Direction.DESC
-                    : Sort.Direction.ASC;
+            var directionValue = parts.length > 1 ? parts[1].trim() : null;
+            if (directionValue == null && i + 1 < values.size() && isDirection(values.get(i + 1))) {
+                directionValue = values.get(++i).trim();
+            }
+            var direction = "desc".equalsIgnoreCase(directionValue) ? Sort.Direction.DESC : Sort.Direction.ASC;
             orders.add(new Sort.Order(direction, field));
         }
         return orders.isEmpty() ? defaultSort : Sort.by(orders);
+    }
+
+    private static boolean isDirection(String value) {
+        return value != null && ("asc".equalsIgnoreCase(value.trim()) || "desc".equalsIgnoreCase(value.trim()));
     }
 }
