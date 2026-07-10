@@ -13,6 +13,10 @@ public interface CourseRepository extends JpaRepository<Course, Long>, JpaSpecif
     @EntityGraph(attributePaths = {"workspace"})
     List<Course> findByWorkspaceId(Long workspaceId);
 
+    long countByWorkspaceId(Long workspaceId);
+
+    long countByWorkspaceIdAndType(Long workspaceId, CourseType type);
+
     @Query("SELECT c FROM Course c WHERE c.workspace.id = :workspaceId AND c.id NOT IN (SELECT s.course.id FROM ScheduleEntry s WHERE s.workspace.id = :workspaceId)")
     List<Course> findUnscheduledByWorkspaceId(@Param("workspaceId") Long workspaceId);
 

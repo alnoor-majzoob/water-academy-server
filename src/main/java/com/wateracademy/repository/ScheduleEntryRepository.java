@@ -1,10 +1,12 @@
 package com.wateracademy.repository;
 
+import com.wateracademy.dto.response.DashboardResponse;
 import com.wateracademy.entity.ScheduleEntry;
 import com.wateracademy.entity.enums.ScheduleStatus;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -19,6 +21,48 @@ public interface ScheduleEntryRepository extends JpaRepository<ScheduleEntry, Lo
 
     @Query("SELECT s.course.id FROM ScheduleEntry s WHERE s.workspace.id = :workspaceId AND (s.status = 'CONFIRMED' OR s.status = 'COMPLETED')")
     Set<Long> findLockedCourseIdsByWorkspaceId(@Param("workspaceId") Long workspaceId);
+
+    @Query("SELECT COUNT(DISTINCT s.course.id) FROM ScheduleEntry s WHERE s.workspace.id = :workspaceId AND (s.conflictNotes IS NULL OR s.conflictNotes = '')")
+    long countDistinctScheduledCoursesByWorkspaceId(@Param("workspaceId") Long workspaceId);
+
+    @Query("SELECT COUNT(s) FROM ScheduleEntry s WHERE s.workspace.id = :workspaceId AND s.conflictNotes IS NOT NULL AND s.conflictNotes <> ''")
+    long countConflictsByWorkspaceId(@Param("workspaceId") Long workspaceId);
+
+    @Query("SELECT MONTH(s.startDate), COUNT(s) FROM ScheduleEntry s WHERE s.workspace.id = :workspaceId GROUP BY MONTH(s.startDate)")
+    List<Object[]> countByStartMonth(@Param("workspaceId") Long workspaceId);
+
+    @Query("""
+            SELECT new com.wateracademy.dto.response.DashboardResponse$TrainerUtilization(
+                t.id,
+                t.name,
+                COUNT(s.id),
+                COALESCE(t.maxDaysPerMonth, COUNT(s.id), 1)
+            )
+            FROM Trainer t
+            LEFT JOIN ScheduleEntry s ON s.trainer = t AND s.workspace.id = :workspaceId
+            WHERE t.workspace.id = :workspaceId
+            GROUP BY t.id, t.name, t.maxDaysPerMonth
+            ORDER BY t.name
+            """)
+    List<DashboardResponse.TrainerUtilization> findTrainerUtilization(@Param("workspaceId") Long workspaceId);
+
+    @Query("""
+            SELECT new com.wateracademy.dto.response.DashboardResponse$UpcomingSession(
+                s.id,
+                s.course.name,
+                s.trainer.name,
+                s.startDate,
+                s.status,
+                CASE WHEN s.conflictNotes IS NOT NULL AND s.conflictNotes <> '' THEN true ELSE false END
+            )
+            FROM ScheduleEntry s
+            WHERE s.workspace.id = :workspaceId AND s.status <> :completedStatus
+            ORDER BY s.startDate ASC, s.id ASC
+            """)
+    List<DashboardResponse.UpcomingSession> findUpcomingDashboardSessions(
+            @Param("workspaceId") Long workspaceId,
+            @Param("completedStatus") ScheduleStatus completedStatus,
+            Pageable pageable);
 
     @Modifying
     @Transactional

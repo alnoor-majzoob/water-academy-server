@@ -12,6 +12,8 @@ public interface TrainerRepository extends JpaRepository<Trainer, Long>, JpaSpec
     @EntityGraph(attributePaths = {"workspace"})
     List<Trainer> findByWorkspaceId(Long workspaceId);
 
+    long countByWorkspaceId(Long workspaceId);
+
     @Query("SELECT DISTINCT t.city FROM Trainer t WHERE t.workspace.id = :workspaceId AND t.city IS NOT NULL AND t.city <> '' ORDER BY t.city")
     List<String> findDistinctCities(@Param("workspaceId") Long workspaceId);
 
