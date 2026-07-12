@@ -18,17 +18,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,92 +78,43 @@ public class ExportService {
         workspaceService.findEntity(workspaceId);
         log.info("Export requested: workspaceId={}, sheets={}, type={}", workspaceId, sheets, type);
 
-        List<Course> courses = Collections.emptyList();
-        List<Trainer> trainers = Collections.emptyList();
-        List<Venue> venues = Collections.emptyList();
-        List<CalendarDay> calendarDays = Collections.emptyList();
-        List<CourseAssignment> assignments = Collections.emptyList();
-        List<ScheduleEntry> scheduleEntries = Collections.emptyList();
-
-        if (type != null) {
-            switch (type) {
-                case "schedule" -> {
-                    List<ScheduleEntry> all = scheduleEntryRepository.findByWorkspaceId(workspaceId);
-                    scheduleEntries = all.stream()
-                        .filter(e -> e.getStatus() == ScheduleStatus.CONFIRMED)
-                        .collect(Collectors.toList());
-                }
-                case "conflicts" -> {
-                    List<ScheduleEntry> all = scheduleEntryRepository.findByWorkspaceId(workspaceId);
-                    scheduleEntries = all.stream()
-                        .filter(e -> e.getConflictNotes() != null && !e.getConflictNotes().isBlank())
-                        .collect(Collectors.toList());
-                }
-                case "unscheduled" -> {
-                    courses = courseRepository.findUnscheduledByWorkspaceId(workspaceId);
-                }
-                default -> {
-                    courses = courseRepository.findByWorkspaceId(workspaceId);
-                    trainers = trainerRepository.findByWorkspaceId(workspaceId);
-                    venues = venueRepository.findByWorkspaceId(workspaceId);
-                    calendarDays = calendarDayRepository.findByWorkspaceId(workspaceId);
-                    assignments = courseAssignmentRepository.findByWorkspaceId(workspaceId);
-                    scheduleEntries = scheduleEntryRepository.findByWorkspaceId(workspaceId);
-                }
-            }
-        } else if (sheets != null && !sheets.isEmpty()) {
-            if (sheets.contains("courses")) courses = courseRepository.findByWorkspaceId(workspaceId);
-            if (sheets.contains("trainers")) trainers = trainerRepository.findByWorkspaceId(workspaceId);
-            if (sheets.contains("venues")) venues = venueRepository.findByWorkspaceId(workspaceId);
-            if (sheets.contains("calendar")) calendarDays = calendarDayRepository.findByWorkspaceId(workspaceId);
-            if (sheets.contains("assignments")) assignments = courseAssignmentRepository.findByWorkspaceId(workspaceId);
-            if (sheets.contains("schedule-entries")) scheduleEntries = scheduleEntryRepository.findByWorkspaceId(workspaceId);
-        } else {
-            courses = courseRepository.findByWorkspaceId(workspaceId);
-            trainers = trainerRepository.findByWorkspaceId(workspaceId);
-            venues = venueRepository.findByWorkspaceId(workspaceId);
-            calendarDays = calendarDayRepository.findByWorkspaceId(workspaceId);
-            assignments = courseAssignmentRepository.findByWorkspaceId(workspaceId);
-            scheduleEntries = scheduleEntryRepository.findByWorkspaceId(workspaceId);
-        }
-
         try (SXSSFWorkbook workbook = new SXSSFWorkbook(100)) {
             CellStyle headerStyle = createHeaderStyle(workbook);
 
             if (type != null) {
                 switch (type) {
-                    case "schedule" -> writeScheduleEntriesSheet(workbook, scheduleEntries, headerStyle);
-                    case "conflicts" -> writeScheduleEntriesSheet(workbook, scheduleEntries, headerStyle);
-                    case "unscheduled" -> writeCoursesSheet(workbook, courses, headerStyle);
-                    default -> {
-                        writeCoursesSheet(workbook, courses, headerStyle);
-                        writeTrainersSheet(workbook, trainers, headerStyle);
-                        writeVenuesSheet(workbook, venues, headerStyle);
-                        writeCalendarSheet(workbook, calendarDays, headerStyle);
-                        writeAssignmentsSheet(workbook, assignments, headerStyle);
-                        writeScheduleEntriesSheet(workbook, scheduleEntries, headerStyle);
-                    }
+                    case "schedule" -> writeScheduleEntriesSheet(workbook,
+                            scheduleEntryRepository.findByWorkspaceIdAndStatus(workspaceId, ScheduleStatus.CONFIRMED), headerStyle);
+                    case "conflicts" -> writeScheduleEntriesSheet(workbook,
+                            scheduleEntryRepository.findConflictsByWorkspaceId(workspaceId), headerStyle);
+                    case "unscheduled" -> writeCoursesSheet(workbook,
+                            courseRepository.findUnscheduledByWorkspaceId(workspaceId), headerStyle);
+                    default -> writeAllSheets(workbook, workspaceId, headerStyle);
                 }
             } else if (sheets != null && !sheets.isEmpty()) {
-                if (sheets.contains("courses")) writeCoursesSheet(workbook, courses, headerStyle);
-                if (sheets.contains("trainers")) writeTrainersSheet(workbook, trainers, headerStyle);
-                if (sheets.contains("venues")) writeVenuesSheet(workbook, venues, headerStyle);
-                if (sheets.contains("calendar")) writeCalendarSheet(workbook, calendarDays, headerStyle);
-                if (sheets.contains("assignments")) writeAssignmentsSheet(workbook, assignments, headerStyle);
-                if (sheets.contains("schedule-entries")) writeScheduleEntriesSheet(workbook, scheduleEntries, headerStyle);
+                if (sheets.contains("courses")) writeCoursesSheet(workbook, courseRepository.findByWorkspaceId(workspaceId), headerStyle);
+                if (sheets.contains("trainers")) writeTrainersSheet(workbook, trainerRepository.findByWorkspaceId(workspaceId), headerStyle);
+                if (sheets.contains("venues")) writeVenuesSheet(workbook, venueRepository.findByWorkspaceId(workspaceId), headerStyle);
+                if (sheets.contains("calendar")) writeCalendarSheet(workbook, calendarDayRepository.findByWorkspaceId(workspaceId), headerStyle);
+                if (sheets.contains("assignments")) writeAssignmentsSheet(workbook, courseAssignmentRepository.findByWorkspaceId(workspaceId), headerStyle);
+                if (sheets.contains("schedule-entries")) writeScheduleEntriesSheet(workbook, scheduleEntryRepository.findByWorkspaceId(workspaceId), headerStyle);
             } else {
-                writeCoursesSheet(workbook, courses, headerStyle);
-                writeTrainersSheet(workbook, trainers, headerStyle);
-                writeVenuesSheet(workbook, venues, headerStyle);
-                writeCalendarSheet(workbook, calendarDays, headerStyle);
-                writeAssignmentsSheet(workbook, assignments, headerStyle);
-                writeScheduleEntriesSheet(workbook, scheduleEntries, headerStyle);
+                writeAllSheets(workbook, workspaceId, headerStyle);
             }
 
             workbook.write(out);
         } catch (IOException e) {
             throw new RuntimeException("Failed to export Excel file", e);
         }
+    }
+
+    private void writeAllSheets(Workbook workbook, Long workspaceId, CellStyle headerStyle) {
+        writeCoursesSheet(workbook, courseRepository.findByWorkspaceId(workspaceId), headerStyle);
+        writeTrainersSheet(workbook, trainerRepository.findByWorkspaceId(workspaceId), headerStyle);
+        writeVenuesSheet(workbook, venueRepository.findByWorkspaceId(workspaceId), headerStyle);
+        writeCalendarSheet(workbook, calendarDayRepository.findByWorkspaceId(workspaceId), headerStyle);
+        writeAssignmentsSheet(workbook, courseAssignmentRepository.findByWorkspaceId(workspaceId), headerStyle);
+        writeScheduleEntriesSheet(workbook, scheduleEntryRepository.findByWorkspaceId(workspaceId), headerStyle);
     }
 
     private void writeCoursesSheet(Workbook workbook, List<Course> courses, CellStyle headerStyle) {
@@ -195,7 +143,7 @@ public class ExportService {
             setCell(row, 13, c.getFixedDate());
             setCell(row, 14, c.getNotes());
         }
-        autoSizeColumns(sheet, headers.length);
+        setColumnWidths(sheet, 16, 6, 28, 24, 16, 16, 18, 18, 22, 14, 14, 16, 16, 16, 36);
     }
 
     private void writeTrainersSheet(Workbook workbook, List<Trainer> trainers, CellStyle headerStyle) {
@@ -218,7 +166,7 @@ public class ExportService {
             setCell(row, 8, t.getCostPerDay());
             setCell(row, 9, t.getNotes());
         }
-        autoSizeColumns(sheet, headers.length);
+        setColumnWidths(sheet, 16, 28, 36, 18, 18, 24, 20, 22, 16, 36);
     }
 
     private void writeVenuesSheet(Workbook workbook, List<Venue> venues, CellStyle headerStyle) {
@@ -240,7 +188,7 @@ public class ExportService {
             setCell(row, 7, v.getUnavailableDates());
             setCell(row, 8, v.getEquipmentNotes());
         }
-        autoSizeColumns(sheet, headers.length);
+        setColumnWidths(sheet, 16, 28, 18, 14, 12, 16, 16, 24, 36);
     }
 
     private void writeCalendarSheet(Workbook workbook, List<CalendarDay> days, CellStyle headerStyle) {
@@ -256,7 +204,7 @@ public class ExportService {
             setCell(row, 2, d.getIsWorkDay() != null && d.getIsWorkDay() ? "Yes" : "No");
             setCell(row, 3, d.getIsHoliday() != null && d.getIsHoliday() ? "Yes" : "No");
         }
-        autoSizeColumns(sheet, headers.length);
+        setColumnWidths(sheet, 16, 16, 14, 14);
     }
 
     private void writeAssignmentsSheet(Workbook workbook, List<CourseAssignment> assignments, CellStyle headerStyle) {
@@ -271,7 +219,7 @@ public class ExportService {
             setCell(row, 1, a.getCourse().getExternalId());
             setCell(row, 2, a.getTrainer().getExternalId());
         }
-        autoSizeColumns(sheet, headers.length);
+        setColumnWidths(sheet, 6, 22, 22);
     }
 
     private void writeScheduleEntriesSheet(Workbook workbook, List<ScheduleEntry> entries, CellStyle headerStyle) {
@@ -290,7 +238,7 @@ public class ExportService {
             setCell(row, 5, e.getStatus() != null ? e.getStatus().name() : null);
             setCell(row, 6, e.getConflictNotes());
         }
-        autoSizeColumns(sheet, headers.length);
+        setColumnWidths(sheet, 32, 28, 28, 16, 16, 14, 48);
     }
 
     private void writeHeaderRow(Sheet sheet, String[] headers, CellStyle style) {
@@ -310,12 +258,9 @@ public class ExportService {
         return style;
     }
 
-    private void autoSizeColumns(Sheet sheet, int count) {
-        if (sheet instanceof SXSSFSheet sx) {
-            sx.trackAllColumnsForAutoSizing();
-        }
-        for (int i = 0; i < count; i++) {
-            sheet.autoSizeColumn(i);
+    private void setColumnWidths(Sheet sheet, int... widths) {
+        for (int i = 0; i < widths.length; i++) {
+            sheet.setColumnWidth(i, widths[i] * 256);
         }
     }
 
