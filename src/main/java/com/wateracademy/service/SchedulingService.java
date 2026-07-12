@@ -1,9 +1,11 @@
 package com.wateracademy.service;
 
 import com.wateracademy.dto.response.TaskResponse;
+import com.wateracademy.exception.TaskAlreadyRunningException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.core.task.TaskRejectedException;
 
 @Service
 public class SchedulingService {
@@ -23,7 +25,12 @@ public class SchedulingService {
         log.info("Scheduling requested: workspaceId={}, mode={}", workspaceId, mode);
         var taskResponse = taskService.create(workspaceId, mode);
 
-        gaRunnerService.runGaAsync(workspaceId, taskResponse.id(), mode);
+        try {
+            gaRunnerService.runGaAsync(workspaceId, taskResponse.id(), mode);
+        } catch (TaskRejectedException ex) {
+            taskService.fail(taskResponse.id(), "Scheduler queue is full. Please try again later.");
+            throw new TaskAlreadyRunningException("Scheduler queue is full. Please try again later.");
+        }
 
         return taskResponse;
     }

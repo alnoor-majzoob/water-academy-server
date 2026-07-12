@@ -61,8 +61,10 @@ public class GaRunnerService {
     @Async("gaTaskExecutor")
     public void runGaAsync(Long workspaceId, Long taskId, String mode) {
         try {
+            long startedAt = System.nanoTime();
             taskService.start(taskId);
 
+            long loadStartedAt = System.nanoTime();
             var existingEntries = scheduleEntryRepository.findByWorkspaceId(workspaceId);
 
             boolean isUpdate = "update".equalsIgnoreCase(mode);
@@ -83,9 +85,11 @@ public class GaRunnerService {
             List<Trainer> gaTrainers = DomainMapper.toGaTrainers(trainers);
             List<Venue> gaVenues = DomainMapper.toGaVenues(venues);
             Calendar gaCalendar = DomainMapper.toGaCalendar(calendarDays);
+            long loadElapsedMs = elapsedMs(loadStartedAt);
 
-            log.info("Starting GA scheduling: workspaceId={}, taskId={}, mode={}, courses={}, trainers={}, venues={}",
-                    workspaceId, taskId, mode, gaCourses.size(), gaTrainers.size(), gaVenues.size());
+            log.info("GA input loaded: workspaceId={}, taskId={}, mode={}, courses={}, trainers={}, venues={}, calendarDays={}, assignments={}, existingEntries={}, elapsed={}ms",
+                    workspaceId, taskId, mode, gaCourses.size(), gaTrainers.size(), gaVenues.size(),
+                    calendarDays.size(), assignments.size(), existingEntries.size(), loadElapsedMs);
 
             var config = new com.wateracademy.scheduler.SchedulerService.Config();
             var scheduler = new com.wateracademy.scheduler.SchedulerService(
@@ -99,6 +103,7 @@ public class GaRunnerService {
                     String.format("%.1f", report.bestFitness),
                     report.elapsedMs);
 
+            long persistStartedAt = System.nanoTime();
             transactionTemplate.executeWithoutResult(status -> {
                 if (isUpdate) {
                     scheduleEntryRepository.deleteScheduledByWorkspaceId(workspaceId);
@@ -122,6 +127,7 @@ public class GaRunnerService {
                 workspace.setStatus(WorkspaceStatus.OPTIMIZED);
                 workspaceRepository.save(workspace);
             });
+            long persistElapsedMs = elapsedMs(persistStartedAt);
 
             int totalScheduled = (int) report.getEntries().stream()
                     .filter(e -> e.startDate != null).count();
@@ -134,6 +140,10 @@ public class GaRunnerService {
                     totalScheduled, totalCourses, unscheduled,
                     report.bestFitness, report.elapsedMs,
                     report.populationSize, report.offspringCount);
+
+            log.info("GA task persisted: workspaceId={}, taskId={}, newEntries={}, loadElapsed={}ms, runElapsed={}ms, persistElapsed={}ms, totalElapsed={}ms",
+                    workspaceId, taskId, totalScheduled, loadElapsedMs, report.elapsedMs,
+                    persistElapsedMs, elapsedMs(startedAt));
 
             if (!report.getUnschedulable().isEmpty()) {
                 StringBuilder sb = new StringBuilder(taskLog);
@@ -152,5 +162,9 @@ public class GaRunnerService {
             taskService.fail(taskId,
                     "GA failed: " + e.getClass().getSimpleName() + ": " + e.getMessage());
         }
+    }
+
+    private long elapsedMs(long startedAt) {
+        return (System.nanoTime() - startedAt) / 1_000_000L;
     }
 }

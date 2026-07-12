@@ -92,12 +92,27 @@ class TaskControllerTest {
     @Test
     void findAll_shouldReturnTasks() throws Exception {
         var wsId = createWorkspace();
-        mockMvc.perform(post("/api/workspaces/{wsId}/tasks", wsId));
+        var json = mockMvc.perform(post("/api/workspaces/{wsId}/tasks", wsId))
+                .andReturn().getResponse().getContentAsString();
+        var created = objectMapper.readValue(json, com.wateracademy.dto.response.TaskResponse.class);
+        mockMvc.perform(post("/api/workspaces/{wsId}/tasks/{id}/start", wsId, created.id()));
+        mockMvc.perform(post("/api/workspaces/{wsId}/tasks/{id}/complete", wsId, created.id())
+                .contentType(MediaType.TEXT_PLAIN)
+                .content("Done"));
         mockMvc.perform(post("/api/workspaces/{wsId}/tasks", wsId));
 
         mockMvc.perform(get("/api/workspaces/{wsId}/tasks", wsId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").value(2));
+    }
+
+    @Test
+    void create_shouldRejectWhenPendingExists() throws Exception {
+        var wsId = createWorkspace();
+        mockMvc.perform(post("/api/workspaces/{wsId}/tasks", wsId));
+
+        mockMvc.perform(post("/api/workspaces/{wsId}/tasks", wsId))
+                .andExpect(status().isConflict());
     }
 
     @Test
