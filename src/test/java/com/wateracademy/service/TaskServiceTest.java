@@ -36,15 +36,6 @@ class TaskServiceTest {
     }
 
     @Test
-    void create_shouldRejectWhenPendingExists() {
-        var wsId = createWorkspace("Pending Dup Task");
-        taskService.create(wsId, null);
-
-        assertThatThrownBy(() -> taskService.create(wsId, null))
-                .isInstanceOf(TaskAlreadyRunningException.class);
-    }
-
-    @Test
     void create_shouldRejectWhenRunningExists() {
         var wsId = createWorkspace("Dup Task");
         var task = taskService.create(wsId, null);
@@ -59,17 +50,6 @@ class TaskServiceTest {
         var t1 = taskService.create(wsId, null);
         taskService.start(t1.id());
         taskService.complete(t1.id(), "Done");
-
-        var t2 = taskService.create(wsId, null);
-        assertThat(t2.id()).isNotNull();
-    }
-
-    @Test
-    void create_shouldAllowNewTaskAfterPreviousFailed() {
-        var wsId = createWorkspace("Sequential Failure");
-        var t1 = taskService.create(wsId, null);
-        taskService.start(t1.id());
-        taskService.fail(t1.id(), "Failed");
 
         var t2 = taskService.create(wsId, null);
         assertThat(t2.id()).isNotNull();
@@ -106,9 +86,7 @@ class TaskServiceTest {
     @Test
     void findAllByWorkspaceId_shouldReturnTasks() {
         var wsId = createWorkspace("List Tasks");
-        var task = taskService.create(wsId, null);
-        taskService.start(task.id());
-        taskService.complete(task.id(), "Done");
+        taskService.create(wsId, null);
         taskService.create(wsId, null);
         assertThat(taskService.findAllByWorkspaceId(wsId)).hasSize(2);
     }

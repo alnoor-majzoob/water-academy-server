@@ -13,7 +13,6 @@ import com.wateracademy.util.PaginationUtils;
 import jakarta.persistence.criteria.Predicate;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -27,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class TaskService {
 
     private static final Logger log = LoggerFactory.getLogger(TaskService.class);
-    private static final Set<TaskStatus> ACTIVE_STATUSES = EnumSet.of(TaskStatus.PENDING, TaskStatus.RUNNING);
     private static final Set<String> SORT_FIELDS = Set.of(
             "id", "status", "mode", "startedAt", "completedAt", "createdAt", "updatedAt");
 
@@ -76,9 +74,9 @@ public class TaskService {
     public TaskResponse create(Long workspaceId, String mode) {
         var workspace = workspaceService.findEntity(workspaceId);
 
-        if (repository.existsByWorkspaceIdAndStatusIn(workspaceId, ACTIVE_STATUSES)) {
+        if (repository.existsByWorkspaceIdAndStatus(workspaceId, TaskStatus.RUNNING)) {
             throw new TaskAlreadyRunningException(
-                    "A task is already pending or running for this workspace");
+                    "A task is already running for this workspace");
         }
 
         var task = new Task();
