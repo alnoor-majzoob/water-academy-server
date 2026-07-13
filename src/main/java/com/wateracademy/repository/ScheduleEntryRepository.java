@@ -19,12 +19,6 @@ public interface ScheduleEntryRepository extends JpaRepository<ScheduleEntry, Lo
     @EntityGraph(attributePaths = {"course", "trainer", "venue"})
     List<ScheduleEntry> findByWorkspaceId(Long workspaceId);
 
-    @EntityGraph(attributePaths = {"course", "trainer", "venue"})
-    List<ScheduleEntry> findByWorkspaceIdAndStatus(Long workspaceId, ScheduleStatus status);
-
-    @Query("SELECT s FROM ScheduleEntry s JOIN FETCH s.course JOIN FETCH s.trainer LEFT JOIN FETCH s.venue WHERE s.workspace.id = :workspaceId AND s.conflictNotes IS NOT NULL AND s.conflictNotes <> ''")
-    List<ScheduleEntry> findConflictsByWorkspaceId(@Param("workspaceId") Long workspaceId);
-
     @Query("SELECT s.course.id FROM ScheduleEntry s WHERE s.workspace.id = :workspaceId AND (s.status = 'CONFIRMED' OR s.status = 'COMPLETED')")
     Set<Long> findLockedCourseIdsByWorkspaceId(@Param("workspaceId") Long workspaceId);
 
