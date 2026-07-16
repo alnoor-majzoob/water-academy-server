@@ -1,20 +1,18 @@
 package com.wateracademy.dto.response;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public record MatchingRecommendedTrainerDto(
-    int trainerId,
-    String trainerNumber,
-    String trainerName,
-    String jobTitle,
+    @JsonProperty("trainer_id") int trainerId,
+    @JsonProperty("trainer_number") String trainerNumber,
+    @JsonProperty("trainer_name") String trainerName,
+    @JsonProperty("job_title") String jobTitle,
     double score,
-    Double localScore,
-    Double aiScore,
-    String matchMethod,
-    String fitLevel,
+    @JsonProperty("local_score") Double localScore,
+    @JsonProperty("ai_score") Double aiScore,
+    @JsonProperty("match_method") String matchMethod,
+    @JsonProperty("fit_level") String fitLevel,
     List<String> reasons,
     List<String> risks,
     List<String> topics
