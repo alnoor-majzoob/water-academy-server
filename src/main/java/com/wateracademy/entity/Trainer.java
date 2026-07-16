@@ -50,6 +50,17 @@ public class Trainer extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
+    @Column(name = "cv_analyzed", nullable = false)
+    private Boolean cvAnalyzed = false;
+
+    public Boolean getCvAnalyzed() {
+        return cvAnalyzed;
+    }
+
+    public void setCvAnalyzed(Boolean cvAnalyzed) {
+        this.cvAnalyzed = cvAnalyzed;
+    }
+
     public String getExternalId() {
         return externalId;
     }

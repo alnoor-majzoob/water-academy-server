@@ -60,6 +60,13 @@ public class TrainerMatchingController {
         return ResponseEntity.ok(service.listTrainers());
     }
 
+    @GetMapping("/trainers/by-trainer-id/{trainerId}")
+    public ResponseEntity<Map<String, Object>> getTrainer(
+            @PathVariable Long workspaceId,
+            @PathVariable String trainerId) {
+        return ResponseEntity.ok(service.getTrainer(trainerId));
+    }
+
     @DeleteMapping("/trainers/{trainerId}")
     public ResponseEntity<Map<String, Object>> deleteTrainer(
             @PathVariable Long workspaceId,

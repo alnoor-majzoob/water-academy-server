@@ -15,6 +15,7 @@ public record TrainerResponse(
     Integer maxConsecutiveDays,
     Integer costPerDay,
     String notes,
+    Boolean cvAnalyzed,
     Instant createdAt,
     Instant updatedAt,
     Long version

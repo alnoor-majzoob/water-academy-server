@@ -22,6 +22,7 @@ public class TrainerMapper {
             entity.getMaxConsecutiveDays(),
             entity.getCostPerDay(),
             entity.getNotes(),
+            entity.getCvAnalyzed(),
             entity.getCreatedAt(),
             entity.getUpdatedAt(),
             entity.getVersion()

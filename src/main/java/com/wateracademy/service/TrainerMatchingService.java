@@ -6,11 +6,14 @@ import com.wateracademy.dto.request.MatchingSaveTrainerRequest;
 import com.wateracademy.dto.response.MatchingCoursePlanResponse;
 import com.wateracademy.dto.response.MatchingProfileAnalysisResponse;
 import com.wateracademy.dto.response.MatchingRecommendationResponse;
+import com.wateracademy.entity.Trainer;
 import com.wateracademy.exception.ExternalServiceException;
+import com.wateracademy.repository.TrainerRepository;
 import java.util.Map;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
@@ -20,9 +23,11 @@ import org.springframework.web.multipart.MultipartFile;
 public class TrainerMatchingService {
 
     private final RestClient client;
+    private final TrainerRepository trainerRepository;
 
-    public TrainerMatchingService(RestClient trainerMatchingClient) {
+    public TrainerMatchingService(RestClient trainerMatchingClient, TrainerRepository trainerRepository) {
         this.client = trainerMatchingClient;
+        this.trainerRepository = trainerRepository;
     }
 
     public Map<String, Object> getHealth() {
@@ -58,8 +63,31 @@ public class TrainerMatchingService {
         }
     }
 
+    @Transactional
     public Map<String, Object> saveTrainer(MatchingSaveTrainerRequest request) {
-        return proxyPost("/api/trainers", request);
+        var result = proxyPost("/api/trainers", request);
+        try {
+            var id = Long.parseLong(request.trainerId());
+            trainerRepository.findById(id).ifPresent(t -> {
+                t.setCvAnalyzed(true);
+                trainerRepository.save(t);
+            });
+        } catch (NumberFormatException ignored) {
+        }
+        return result;
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> getTrainer(String trainerId) {
+        try {
+            return client.get()
+                .uri("/api/trainers/{trainerId}", trainerId)
+                .retrieve()
+                .body(Map.class);
+        } catch (RestClientResponseException e) {
+            throw new ExternalServiceException(
+                HttpStatusCode.valueOf(e.getStatusCode().value()), e.getResponseBodyAsString());
+        }
     }
 
     @SuppressWarnings("unchecked")
