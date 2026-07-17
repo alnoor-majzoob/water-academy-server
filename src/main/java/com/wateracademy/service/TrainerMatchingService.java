@@ -6,10 +6,12 @@ import com.wateracademy.dto.request.MatchingSaveTrainerRequest;
 import com.wateracademy.dto.response.MatchingCoursePlanResponse;
 import com.wateracademy.dto.response.MatchingProfileAnalysisResponse;
 import com.wateracademy.dto.response.MatchingRecommendationResponse;
-import com.wateracademy.entity.Trainer;
+import com.wateracademy.dto.response.MatchingTrainerDto;
 import com.wateracademy.exception.ExternalServiceException;
 import com.wateracademy.repository.TrainerRepository;
+import java.util.List;
 import java.util.Map;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
@@ -77,23 +79,30 @@ public class TrainerMatchingService {
         return result;
     }
 
-    @SuppressWarnings("unchecked")
-    public Map<String, Object> getTrainer(String trainerId) {
+    public MatchingTrainerDto getTrainer(String trainerId) {
         try {
             return client.get()
                 .uri("/api/trainers/{trainerId}", trainerId)
                 .retrieve()
-                .body(Map.class);
+                .body(MatchingTrainerDto.class);
         } catch (RestClientResponseException e) {
             throw new ExternalServiceException(
                 HttpStatusCode.valueOf(e.getStatusCode().value()), e.getResponseBodyAsString());
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public Map<String, Object> listTrainers() {
-        var response = proxyGet("/api/trainers");
-        return response;
+    public List<MatchingTrainerDto> listTrainers() {
+        try {
+            record TrainersWrapper(List<MatchingTrainerDto> trainers) {}
+            var wrapper = client.get()
+                .uri("/api/trainers")
+                .retrieve()
+                .body(TrainersWrapper.class);
+            return wrapper != null ? wrapper.trainers() : List.of();
+        } catch (RestClientResponseException e) {
+            throw new ExternalServiceException(
+                HttpStatusCode.valueOf(e.getStatusCode().value()), e.getResponseBodyAsString());
+        }
     }
 
     public Map<String, Object> deleteTrainer(int trainerId) {
@@ -101,7 +110,7 @@ public class TrainerMatchingService {
             return client.delete()
                 .uri("/api/trainers/{trainerId}", trainerId)
                 .retrieve()
-                .body(Map.class);
+                .body(new ParameterizedTypeReference<>() {});
         } catch (RestClientResponseException e) {
             throw new ExternalServiceException(
                 HttpStatusCode.valueOf(e.getStatusCode().value()), e.getResponseBodyAsString());
@@ -109,18 +118,46 @@ public class TrainerMatchingService {
     }
 
     public MatchingRecommendationResponse getRecommendations(MatchingRecommendationRequest request) {
-        return proxyPost("/api/recommendations", request, MatchingRecommendationResponse.class);
+        try {
+            return client.post()
+                .uri("/api/recommendations")
+                .body(request)
+                .retrieve()
+                .body(MatchingRecommendationResponse.class);
+        } catch (RestClientResponseException e) {
+            throw new ExternalServiceException(
+                HttpStatusCode.valueOf(e.getStatusCode().value()), e.getResponseBodyAsString());
+        }
     }
 
     public MatchingCoursePlanResponse assignTrainer(int planId, MatchingAssignRequest request) {
-        return proxyPost("/api/course-plans/{planId}/assign", request, MatchingCoursePlanResponse.class, planId);
+        try {
+            return client.post()
+                .uri("/api/course-plans/{planId}/assign", planId)
+                .body(request)
+                .retrieve()
+                .body(MatchingCoursePlanResponse.class);
+        } catch (RestClientResponseException e) {
+            throw new ExternalServiceException(
+                HttpStatusCode.valueOf(e.getStatusCode().value()), e.getResponseBodyAsString());
+        }
+    }
+
+    public List<MatchingCoursePlanResponse.MatchingCoursePlanDto> listCoursePlans() {
+        try {
+            record PlansWrapper(List<MatchingCoursePlanResponse.MatchingCoursePlanDto> plans) {}
+            var wrapper = client.get()
+                .uri("/api/course-plans")
+                .retrieve()
+                .body(PlansWrapper.class);
+            return wrapper != null ? wrapper.plans() : List.of();
+        } catch (RestClientResponseException e) {
+            throw new ExternalServiceException(
+                HttpStatusCode.valueOf(e.getStatusCode().value()), e.getResponseBodyAsString());
+        }
     }
 
     @SuppressWarnings("unchecked")
-    public Map<String, Object> listCoursePlans() {
-        return proxyGet("/api/course-plans");
-    }
-
     private Map<String, Object> proxyGet(String path) {
         try {
             return client.get()
@@ -133,6 +170,7 @@ public class TrainerMatchingService {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private Map<String, Object> proxyPost(String path, Object request) {
         try {
             return client.post()
@@ -140,19 +178,6 @@ public class TrainerMatchingService {
                 .body(request)
                 .retrieve()
                 .body(Map.class);
-        } catch (RestClientResponseException e) {
-            throw new ExternalServiceException(
-                HttpStatusCode.valueOf(e.getStatusCode().value()), e.getResponseBodyAsString());
-        }
-    }
-
-    private <T> T proxyPost(String path, Object request, Class<T> responseType, Object... uriVars) {
-        try {
-            return client.post()
-                .uri(path, uriVars)
-                .body(request)
-                .retrieve()
-                .body(responseType);
         } catch (RestClientResponseException e) {
             throw new ExternalServiceException(
                 HttpStatusCode.valueOf(e.getStatusCode().value()), e.getResponseBodyAsString());

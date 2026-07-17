@@ -6,7 +6,9 @@ import com.wateracademy.dto.request.MatchingSaveTrainerRequest;
 import com.wateracademy.dto.response.MatchingCoursePlanResponse;
 import com.wateracademy.dto.response.MatchingProfileAnalysisResponse;
 import com.wateracademy.dto.response.MatchingRecommendationResponse;
+import com.wateracademy.dto.response.MatchingTrainerDto;
 import com.wateracademy.service.TrainerMatchingService;
+import java.util.List;
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -57,11 +59,11 @@ public class TrainerMatchingController {
 
     @GetMapping("/trainers")
     public ResponseEntity<Map<String, Object>> listTrainers(@PathVariable Long workspaceId) {
-        return ResponseEntity.ok(service.listTrainers());
+        return ResponseEntity.ok(Map.of("trainers", service.listTrainers()));
     }
 
     @GetMapping("/trainers/by-trainer-id/{trainerId}")
-    public ResponseEntity<Map<String, Object>> getTrainer(
+    public ResponseEntity<MatchingTrainerDto> getTrainer(
             @PathVariable Long workspaceId,
             @PathVariable String trainerId) {
         return ResponseEntity.ok(service.getTrainer(trainerId));
@@ -91,6 +93,6 @@ public class TrainerMatchingController {
 
     @GetMapping("/course-plans")
     public ResponseEntity<Map<String, Object>> listCoursePlans(@PathVariable Long workspaceId) {
-        return ResponseEntity.ok(service.listCoursePlans());
+        return ResponseEntity.ok(Map.of("plans", service.listCoursePlans()));
     }
 }

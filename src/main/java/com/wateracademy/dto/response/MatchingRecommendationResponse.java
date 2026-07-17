@@ -1,13 +1,22 @@
 package com.wateracademy.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
-import java.util.Map;
 
 public record MatchingRecommendationResponse(
     boolean ok,
-    @JsonProperty("plan_id") int planId,
-    @JsonProperty("recommended_trainers") List<MatchingRecommendedTrainerDto> recommendedTrainers,
-    Map<String, Object> proposal,
-    Map<String, Object> matching
-) {}
+    int planId,
+    List<MatchingRecommendedTrainerDto> recommendedTrainers,
+    Proposal proposal,
+    MatchingMeta matching
+) {
+    public record Proposal(Integer trainerId) {}
+
+    public record MatchingMeta(
+        boolean enabled,
+        boolean used,
+        String provider,
+        String model,
+        int durationMs,
+        String error
+    ) {}
+}
