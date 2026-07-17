@@ -4,6 +4,7 @@ public record MatchingRecommendationRequest(
     String courseName,
     String courseDesc,
     Integer attendees,
+    String lang,
     Boolean useAiRerank,
     String aiProvider,
     Integer topK
